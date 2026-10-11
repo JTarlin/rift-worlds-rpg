@@ -62,7 +62,7 @@ import SiteFooter from "../components/SiteFooter.astro";
             <button class="team-b" type="button" data-team="B">Team B</button>
           </div>
           <label>Choose unit<select id="unit-template"></select></label>
-          <button class="button secondary full-button" id="select-unit" type="button">Ready unit for placement</button>
+          <p class="storage-note">Left-click an empty hex to place the selected unit. Right-click a deployed unit to remove it.</p>
           <div class="team-rosters">
             <div><h3>Team A</h3><ul id="team-a-list"></ul></div>
             <div><h3>Team B</h3><ul id="team-b-list"></ul></div>
@@ -117,7 +117,6 @@ import SiteFooter from "../components/SiteFooter.astro";
   let mode: Mode = "paint";
   let team: Team = "A";
   let erasing = false;
-  let pendingTemplate: CharacterTemplate | null = null;
   let units: Unit[] = [];
   let selectedUnitId = "";
   let initiative: string[] = [];
@@ -393,7 +392,6 @@ import SiteFooter from "../components/SiteFooter.astro";
 
   function setMode(nextMode: Mode) {
     mode = nextMode;
-    pendingTemplate = mode === "deploy" ? pendingTemplate : null;
     document.querySelectorAll<HTMLElement>("[data-mode]").forEach((item) => item.classList.toggle("active", item.dataset.mode === mode));
     document.querySelectorAll<HTMLElement>("[data-phase]").forEach((item) => {
       item.hidden = item.dataset.phase !== mode;
@@ -437,17 +435,31 @@ import SiteFooter from "../components/SiteFooter.astro";
     byId("match-log").prepend(entry);
   }
 
-  function handleCell(cellIndex: number) {
+  function removeUnitAt(cellIndex: number) {
+    const unit = units.find((candidate) => candidate.cell === cellIndex);
+    if (!unit) return;
+    units = units.filter((candidate) => candidate.id !== unit.id);
+    initiative = initiative.filter((id) => id !== unit.id);
+    if (selectedUnitId === unit.id) selectedUnitId = "";
+    logActivity(`${unit.name} removed from the battle.`);
+  }
+
+  function handleCell(cellIndex: number, erase = false) {
     const cell = cells[cellIndex];
     const occupying = units.find((unit) => unit.cell === cell.index);
     if (mode === "paint") {
+      contextErasing = erase;
       paintCell(cell);
-    } else if (mode === "deploy" && pendingTemplate && !occupying) {
-      const deployed = { ...structuredClone(pendingTemplate), id: crypto.randomUUID(), team, cell: cell.index, currentHealth: healthFor(pendingTemplate), currentEnergy: energyFor(pendingTemplate), actionsUsed: 0, initiative: 0 };
+      contextErasing = false;
+    } else if (mode === "deploy" && erase) {
+      removeUnitAt(cellIndex);
+    } else if (mode === "deploy" && !occupying) {
+      const template = availableUnits[Number(byId<HTMLSelectElement>("unit-template").value)];
+      if (!template) return;
+      const deployed = { ...structuredClone(template), id: crypto.randomUUID(), team, cell: cell.index, currentHealth: healthFor(template), currentEnergy: energyFor(template), actionsUsed: 0, initiative: 0 };
       units.push(deployed);
       logActivity(`${deployed.name} deployed for Team ${team}.`);
-      pendingTemplate = null;
-      byId("battle-status").textContent = "Unit deployed. Select another unit or switch to play mode.";
+      byId("battle-status").textContent = `${deployed.name} deployed for Team ${team}. Click another empty hex to place another.`;
     } else if (occupying) {
       selectedUnitId = occupying.id;
       movesRemaining = movementFor(occupying);
@@ -475,8 +487,10 @@ import SiteFooter from "../components/SiteFooter.astro";
       contextErasing = true;
       if (mode === "paint") {
         pointerPainting = true;
-        paintCell(cells[Number(hex.dataset.cell)]);
+        handleCell(Number(hex.dataset.cell), true);
         renderMap();
+      } else if (mode === "deploy") {
+        handleCell(Number(hex.dataset.cell), true);
       }
       return;
     }
@@ -531,16 +545,10 @@ import SiteFooter from "../components/SiteFooter.astro";
     if (!hex) return;
     const cellIndex = Number(hex.dataset.cell);
     if (mode === "paint") {
-      paintCell(cells[cellIndex]);
+      handleCell(cellIndex, true);
       renderMap();
     } else if (mode === "deploy") {
-      const unit = units.find((candidate) => candidate.cell === cellIndex);
-      if (!unit) return;
-      units = units.filter((candidate) => candidate.id !== unit.id);
-      initiative = initiative.filter((id) => id !== unit.id);
-      if (selectedUnitId === unit.id) selectedUnitId = "";
-      logActivity(`${unit.name} removed from the battle.`);
-      renderAll();
+      handleCell(cellIndex, true);
     }
   });
 
@@ -567,10 +575,9 @@ import SiteFooter from "../components/SiteFooter.astro";
 
   const unitSelect = byId<HTMLSelectElement>("unit-template");
   unitSelect.innerHTML = availableUnits.map((unit, index) => `<option value="${index}">${unit.name} — Level ${unit.level}</option>`).join("");
-  byId("select-unit").addEventListener("click", () => {
-    pendingTemplate = availableUnits[Number(unitSelect.value)];
-    setMode("deploy");
-    byId("battle-status").textContent = `Place ${pendingTemplate.name} for Team ${team}.`;
+  unitSelect.addEventListener("change", () => {
+    const selected = availableUnits[Number(unitSelect.value)];
+    if (selected) byId("battle-status").textContent = `${selected.name} selected for Team ${team}. Left-click an empty hex to place it.`;
   });
 
   byId("start-match").addEventListener("click", () => {
