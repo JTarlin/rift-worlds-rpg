@@ -126,6 +126,71 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .index-header { max-width: 740px; margin-bottom: 3rem; }
 .rules-grid.compact { grid-template-columns: repeat(2, 1fr); }
 .rules-grid.compact .rule-card { min-height: 265px; }
+.builder-page { padding-block: 4.5rem 7rem; }
+.builder-heading { max-width: 820px; margin-bottom: 3rem; }
+.builder-heading h1 { margin-bottom: 1rem; font-size: clamp(3rem, 6vw, 5.5rem); }
+.builder-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, .8fr); align-items: start; gap: 2rem; }
+.builder-form { display: grid; gap: 1rem; }
+.builder-panel, .roster-panel { padding: 1.5rem; border: 1px solid var(--line); background: var(--night-soft); }
+.roster-panel { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+.panel-title { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; }
+.panel-title h2 { margin: 0; font-size: 1.35rem; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.builder-panel label { display: grid; gap: .35rem; color: var(--muted); font-size: .74rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.builder-panel input, .builder-panel select, .builder-panel textarea {
+  width: 100%;
+  min-height: 2.85rem;
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--night);
+  color: var(--ink);
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.builder-panel textarea { resize: vertical; }
+.builder-panel input:focus, .builder-panel select:focus, .builder-panel textarea:focus { border-color: var(--rift); outline: 1px solid var(--rift); }
+.stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 1.25rem; border: 1px solid var(--line); }
+.stat-strip div { padding: .8rem; border-right: 1px solid var(--line); }
+.stat-strip div:last-child { border-right: 0; }
+.stat-strip span, .roster-card-header span, .roster-skills span { display: block; color: var(--dim); font-size: .63rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.stat-strip strong { display: block; margin-top: .15rem; color: var(--rift); font-family: var(--display); font-size: 1.35rem; }
+.add-row { display: grid; grid-template-columns: 1fr 110px auto; align-items: end; gap: .8rem; }
+.skill-add-row { grid-template-columns: 1fr 130px 90px auto; }
+.add-row .button { min-height: 2.85rem; }
+.counter { color: var(--ember); font-size: .75rem; font-weight: 700; }
+.form-message { min-height: 1.4rem; margin: .4rem 0; color: #f0a69b; font-size: .8rem; }
+.skill-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+.skill-columns > div { min-width: 0; padding: 1rem; border: 1px solid var(--line); background: var(--night); }
+.skill-columns h3 { margin-bottom: .8rem; color: var(--rift); font-size: .82rem; text-transform: uppercase; }
+.skill-columns ul, .tag-list { margin: 0; padding: 0; list-style: none; }
+.skill-columns li, .tag-list li { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .45rem 0; border-bottom: 1px solid var(--line); font-size: .82rem; }
+.skill-columns li:last-child, .tag-list li:last-child { border-bottom: 0; }
+.skill-columns button, .tag-list button { border: 0; background: transparent; color: var(--dim); cursor: pointer; font-size: 1.2rem; }
+.skill-columns button:hover, .tag-list button:hover { color: #f0a69b; }
+.empty { color: var(--dim); font-style: italic; }
+.tag-list { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tag-list li { gap: .8rem; padding: .4rem .7rem; border: 1px solid var(--line); background: var(--night); }
+.save-character { width: 100%; margin-top: 1rem; }
+.text-button, .roster-actions button { padding: 0; border: 0; background: transparent; color: var(--rift); cursor: pointer; font: inherit; font-size: .75rem; font-weight: 700; }
+.danger { color: #e59086 !important; }
+.storage-note { margin: -1rem 0 1.5rem; color: var(--dim); font-size: .78rem; }
+.roster-list { display: grid; gap: .8rem; }
+.roster-card { padding: 1rem; border: 1px solid var(--line); background: var(--night); }
+.roster-card-header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.roster-card-header h3 { margin: .2rem 0 .75rem; font-size: 1.05rem; }
+.roster-card-header > strong { color: var(--ember); font-family: var(--display); font-size: .75rem; white-space: nowrap; }
+.roster-stats { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
+.roster-stats span { padding: .2rem .45rem; background: rgba(144,226,189,.08); color: var(--rift); font-size: .68rem; }
+.roster-skills { display: grid; gap: .4rem; }
+.roster-skills p { margin: 0; color: var(--muted); font-size: .78rem; }
+.roster-perks, .roster-notes { margin: .8rem 0 0; color: var(--muted); font-size: .78rem; }
+.roster-actions { display: flex; gap: 1rem; margin-top: 1rem; padding-top: .7rem; border-top: 1px solid var(--line); }
+.empty-roster { padding: 3rem 1rem; color: var(--dim); text-align: center; }
+.empty-roster span { color: var(--rift); font-size: 2rem; }
+.empty-roster h3 { margin: .7rem 0 .3rem; color: var(--ink); font-size: 1rem; }
+.empty-roster p { margin: 0; font-size: .82rem; }
 
 @media (max-width: 900px) {
   .hero-grid, .principles { grid-template-columns: 1fr; }
@@ -137,6 +202,8 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
   .rules-sidebar { position: static; overflow-x: auto; }
   .rules-sidebar ol { display: flex; min-width: max-content; }
   .rules-sidebar a { border-bottom: 1px solid var(--line); border-left: 0; }
+  .builder-layout { grid-template-columns: 1fr; }
+  .roster-panel { position: static; max-height: none; }
 }
 
 @media (max-width: 640px) {
@@ -154,6 +221,9 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
   .chapter-header { grid-template-columns: 1fr; }
   .rules-layout { padding-block: 2rem 4rem; }
   .prose table { display: block; overflow-x: auto; }
+  .form-grid, .skill-columns, .stat-strip { grid-template-columns: 1fr 1fr; }
+  .add-row, .skill-add-row { grid-template-columns: 1fr; }
+  .site-header nav > a:nth-child(2) { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

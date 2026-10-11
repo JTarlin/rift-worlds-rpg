@@ -1,0 +1,331 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+---
+
+<BaseLayout title="Character Builder" description="Build and temporarily save a roster of Rift Worlds 13 characters and creature templates.">
+  <SiteHeader />
+  <main id="main-content" class="shell builder-page">
+    <header class="builder-heading">
+      <p class="eyebrow">Roster workshop</p>
+      <h1>Character Builder</h1>
+      <p class="lede">Create heroes, guards, space orcs, dinosaurs, alien monsters, and reusable encounter templates. Your roster is saved only in this browser.</p>
+    </header>
+
+    <div class="builder-layout">
+      <form class="builder-form" id="character-form">
+        <input type="hidden" id="character-id" />
+        <section class="builder-panel">
+          <div class="panel-title">
+            <div><p class="eyebrow">Identity</p><h2>Character details</h2></div>
+            <button class="text-button" type="button" id="reset-form">New character</button>
+          </div>
+          <div class="form-grid">
+            <label>Name<input id="character-name" required maxlength="80" placeholder="Void Station Guard" /></label>
+            <label>Type<input id="character-type" maxlength="80" placeholder="Guard, dinosaur, alien…" /></label>
+            <label>Level<input id="character-level" type="number" min="1" max="100" value="1" required /></label>
+            <label>Health perks<input id="health-perks" type="number" min="0" max="50" value="0" /></label>
+          </div>
+          <div class="stat-strip" aria-live="polite">
+            <div><span>Health</span><strong id="health-total">1</strong></div>
+            <div><span>Skill points</span><strong id="skill-limit">1</strong></div>
+            <div><span>Perks available</span><strong id="perk-limit">0</strong></div>
+            <div><span>Skill cap</span><strong id="skill-cap">2</strong></div>
+          </div>
+        </section>
+
+        <section class="builder-panel">
+          <div class="panel-title">
+            <div><p class="eyebrow">Capabilities</p><h2>Custom skills</h2></div>
+            <span class="counter" id="skill-counter">0 / 1 points</span>
+          </div>
+          <div class="add-row skill-add-row">
+            <label>Skill name<input id="skill-name" maxlength="60" placeholder="Plasma Rifle" /></label>
+            <label>Category<select id="skill-category"><option value="offence">Offence</option><option value="defence">Defence</option><option value="tactical">Tactical</option></select></label>
+            <label>Rating<input id="skill-rating" type="number" min="1" max="2" value="1" /></label>
+            <button class="button secondary" type="button" id="add-skill">Add skill</button>
+          </div>
+          <p class="form-message" id="skill-message" role="status"></p>
+          <div class="skill-columns" id="skill-columns">
+            <div><h3>Offence</h3><ul data-category="offence"></ul></div>
+            <div><h3>Defence</h3><ul data-category="defence"></ul></div>
+            <div><h3>Tactical</h3><ul data-category="tactical"></ul></div>
+          </div>
+        </section>
+
+        <section class="builder-panel">
+          <div class="panel-title">
+            <div><p class="eyebrow">Special abilities</p><h2>Perks</h2></div>
+            <span class="counter" id="perk-counter">0 / 0 perks</span>
+          </div>
+          <div class="add-row">
+            <label>Perk name<input id="perk-name" maxlength="60" placeholder="Multitarget" /></label>
+            <label>Ranks<input id="perk-ranks" type="number" min="1" max="50" value="1" /></label>
+            <button class="button secondary" type="button" id="add-perk">Add perk</button>
+          </div>
+          <p class="form-message" id="perk-message" role="status"></p>
+          <ul class="tag-list" id="perk-list"></ul>
+        </section>
+
+        <section class="builder-panel">
+          <label>Notes<textarea id="character-notes" rows="4" maxlength="1000" placeholder="Equipment, appearance, encounter role, special rules…"></textarea></label>
+          <button class="button primary save-character" type="submit">Save to roster</button>
+        </section>
+      </form>
+
+      <aside class="roster-panel">
+        <div class="panel-title">
+          <div><p class="eyebrow">Local roster</p><h2>Saved characters</h2></div>
+          <button class="text-button danger" type="button" id="clear-roster">Clear all</button>
+        </div>
+        <p class="storage-note">Stored temporarily in this browser. Nothing is uploaded.</p>
+        <div id="roster-list" class="roster-list"></div>
+      </aside>
+    </div>
+  </main>
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  type Category = "offence" | "defence" | "tactical";
+  type Skill = { id: string; name: string; category: Category; rating: number };
+  type Perk = { id: string; name: string; ranks: number };
+  type Character = {
+    id: string;
+    name: string;
+    type: string;
+    level: number;
+    healthPerks: number;
+    skills: Skill[];
+    perks: Perk[];
+    notes: string;
+  };
+
+  const storageKey = "rift-worlds-character-roster-v1";
+  const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const form = byId<HTMLFormElement>("character-form");
+  let skills: Skill[] = [];
+  let perks: Perk[] = [];
+  let roster: Character[] = loadRoster();
+
+  function loadRoster(): Character[] {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveRoster() {
+    localStorage.setItem(storageKey, JSON.stringify(roster));
+  }
+
+  function value(id: string) {
+    return byId<HTMLInputElement>(id).value.trim();
+  }
+
+  function numberValue(id: string) {
+    return Math.max(0, Number(byId<HTMLInputElement>(id).value) || 0);
+  }
+
+  function rules() {
+    const level = Math.max(1, numberValue("character-level"));
+    return {
+      level,
+      health: Math.ceil(level / 2) + numberValue("health-perks") * 3,
+      skillPoints: level,
+      perks: Math.floor(level / 2),
+      skillCap: Math.floor(level / 10) + 2,
+    };
+  }
+
+  function usedSkillPoints() {
+    return skills.reduce((total, skill) => total + skill.rating, 0);
+  }
+
+  function usedPerks() {
+    return perks.reduce((total, perk) => total + perk.ranks, 0);
+  }
+
+  function escapeHtml(text: string) {
+    const element = document.createElement("div");
+    element.textContent = text;
+    return element.innerHTML;
+  }
+
+  function updateStats() {
+    const current = rules();
+    byId("health-total").textContent = String(current.health);
+    byId("skill-limit").textContent = String(current.skillPoints);
+    byId("perk-limit").textContent = String(current.perks);
+    byId("skill-cap").textContent = String(current.skillCap);
+    byId<HTMLInputElement>("skill-rating").max = String(current.skillCap);
+    byId("skill-counter").textContent = `${usedSkillPoints()} / ${current.skillPoints} points`;
+    byId("perk-counter").textContent = `${usedPerks()} / ${current.perks} perks`;
+  }
+
+  function renderSkills() {
+    document.querySelectorAll<HTMLUListElement>("#skill-columns ul").forEach((list) => {
+      const category = list.dataset.category as Category;
+      const categorySkills = skills.filter((skill) => skill.category === category);
+      list.innerHTML = categorySkills.length
+        ? categorySkills.map((skill) => `<li><span>${escapeHtml(skill.name)} <strong>${skill.rating}</strong></span><button type="button" data-remove-skill="${skill.id}" aria-label="Remove ${escapeHtml(skill.name)}">×</button></li>`).join("")
+        : `<li class="empty">No ${category} skills</li>`;
+    });
+    updateStats();
+  }
+
+  function renderPerks() {
+    byId("perk-list").innerHTML = perks.length
+      ? perks.map((perk) => `<li><span>${escapeHtml(perk.name)}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}</span><button type="button" data-remove-perk="${perk.id}" aria-label="Remove ${escapeHtml(perk.name)}">×</button></li>`).join("")
+      : `<li class="empty">No perks selected</li>`;
+    updateStats();
+  }
+
+  function renderRoster() {
+    const list = byId("roster-list");
+    list.innerHTML = roster.length
+      ? roster.map((character) => {
+          const health = Math.ceil(character.level / 2) + character.healthPerks * 3;
+          const grouped = (["offence", "defence", "tactical"] as Category[]).map((category) => {
+            const items = character.skills.filter((skill) => skill.category === category);
+            return `<div><span>${category}</span><p>${items.length ? items.map((skill) => `${escapeHtml(skill.name)} ${skill.rating}`).join(", ") : "None"}</p></div>`;
+          }).join("");
+          return `<article class="roster-card">
+            <div class="roster-card-header"><div><span>${escapeHtml(character.type || "Character")}</span><h3>${escapeHtml(character.name)}</h3></div><strong>Lvl ${character.level}</strong></div>
+            <div class="roster-stats"><span>${health} Health</span><span>${character.skills.reduce((sum, skill) => sum + skill.rating, 0)} Skill points</span><span>${character.perks.reduce((sum, perk) => sum + perk.ranks, 0)} Perks</span></div>
+            <div class="roster-skills">${grouped}</div>
+            ${character.perks.length ? `<p class="roster-perks"><strong>Perks:</strong> ${character.perks.map((perk) => `${escapeHtml(perk.name)}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}`).join(", ")}</p>` : ""}
+            ${character.notes ? `<p class="roster-notes">${escapeHtml(character.notes)}</p>` : ""}
+            <div class="roster-actions"><button type="button" data-edit="${character.id}">Edit</button><button type="button" data-copy="${character.id}">Duplicate</button><button type="button" class="danger" data-delete="${character.id}">Delete</button></div>
+          </article>`;
+        }).join("")
+      : `<div class="empty-roster"><span>◇</span><h3>No characters yet</h3><p>Build a character or creature template and save it here.</p></div>`;
+  }
+
+  function resetForm() {
+    form.reset();
+    byId<HTMLInputElement>("character-id").value = "";
+    byId<HTMLInputElement>("character-level").value = "1";
+    byId<HTMLInputElement>("health-perks").value = "0";
+    skills = [];
+    perks = [];
+    renderSkills();
+    renderPerks();
+    byId("character-name").focus();
+  }
+
+  byId("add-skill").addEventListener("click", () => {
+    const name = value("skill-name");
+    const category = byId<HTMLSelectElement>("skill-category").value as Category;
+    const rating = Math.max(1, numberValue("skill-rating"));
+    const current = rules();
+    const message = byId("skill-message");
+    if (!name) return void (message.textContent = "Enter a skill name.");
+    if (rating > current.skillCap) return void (message.textContent = `The skill cap at level ${current.level} is ${current.skillCap}.`);
+    if (usedSkillPoints() + rating > current.skillPoints) return void (message.textContent = "That skill would exceed the character's available skill points.");
+    skills.push({ id: crypto.randomUUID(), name, category, rating });
+    byId<HTMLInputElement>("skill-name").value = "";
+    byId<HTMLInputElement>("skill-rating").value = "1";
+    message.textContent = "";
+    renderSkills();
+  });
+
+  byId("add-perk").addEventListener("click", () => {
+    const name = value("perk-name");
+    const ranks = Math.max(1, numberValue("perk-ranks"));
+    const message = byId("perk-message");
+    if (!name) return void (message.textContent = "Enter a perk name.");
+    if (usedPerks() + ranks > rules().perks) return void (message.textContent = "That perk would exceed the perks available at this level.");
+    perks.push({ id: crypto.randomUUID(), name, ranks });
+    byId<HTMLInputElement>("perk-name").value = "";
+    byId<HTMLInputElement>("perk-ranks").value = "1";
+    message.textContent = "";
+    renderPerks();
+  });
+
+  byId("skill-columns").addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-skill]");
+    if (!button) return;
+    skills = skills.filter((skill) => skill.id !== button.dataset.removeSkill);
+    renderSkills();
+  });
+
+  byId("perk-list").addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-perk]");
+    if (!button) return;
+    perks = perks.filter((perk) => perk.id !== button.dataset.removePerk);
+    renderPerks();
+  });
+
+  ["character-level", "health-perks"].forEach((id) => byId(id).addEventListener("input", updateStats));
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const current = rules();
+    if (usedSkillPoints() > current.skillPoints || skills.some((skill) => skill.rating > current.skillCap)) {
+      byId("skill-message").textContent = "Adjust skills to fit this character's level before saving.";
+      return;
+    }
+    if (usedPerks() > current.perks) {
+      byId("perk-message").textContent = "Adjust perks to fit this character's level before saving.";
+      return;
+    }
+    const existingId = value("character-id");
+    const character: Character = {
+      id: existingId || crypto.randomUUID(),
+      name: value("character-name"),
+      type: value("character-type"),
+      level: current.level,
+      healthPerks: numberValue("health-perks"),
+      skills,
+      perks,
+      notes: byId<HTMLTextAreaElement>("character-notes").value.trim(),
+    };
+    const index = roster.findIndex((item) => item.id === character.id);
+    if (index >= 0) roster[index] = character;
+    else roster.unshift(character);
+    saveRoster();
+    renderRoster();
+    resetForm();
+  });
+
+  byId("roster-list").addEventListener("click", (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLButtonElement>("button");
+    if (!target) return;
+    const id = target.dataset.edit || target.dataset.copy || target.dataset.delete;
+    const character = roster.find((item) => item.id === id);
+    if (!character) return;
+    if (target.dataset.delete) {
+      roster = roster.filter((item) => item.id !== id);
+      saveRoster();
+      renderRoster();
+      return;
+    }
+    byId<HTMLInputElement>("character-id").value = target.dataset.copy ? "" : character.id;
+    byId<HTMLInputElement>("character-name").value = target.dataset.copy ? `${character.name} Copy` : character.name;
+    byId<HTMLInputElement>("character-type").value = character.type;
+    byId<HTMLInputElement>("character-level").value = String(character.level);
+    byId<HTMLInputElement>("health-perks").value = String(character.healthPerks);
+    byId<HTMLTextAreaElement>("character-notes").value = character.notes;
+    skills = structuredClone(character.skills).map((skill) => ({ ...skill, id: crypto.randomUUID() }));
+    perks = structuredClone(character.perks).map((perk) => ({ ...perk, id: crypto.randomUUID() }));
+    renderSkills();
+    renderPerks();
+    form.scrollIntoView({ behavior: "smooth" });
+  });
+
+  byId("reset-form").addEventListener("click", resetForm);
+  byId("clear-roster").addEventListener("click", () => {
+    if (!roster.length || !confirm("Delete every locally saved character?")) return;
+    roster = [];
+    saveRoster();
+    renderRoster();
+  });
+
+  renderSkills();
+  renderPerks();
+  renderRoster();
+</script>
