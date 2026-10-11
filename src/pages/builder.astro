@@ -22,8 +22,8 @@ import SiteFooter from "../components/SiteFooter.astro";
             <button class="text-button" type="button" id="reset-form">New character</button>
           </div>
           <div class="form-grid">
-            <label>Name<input id="character-name" required maxlength="80" placeholder="Void Station Guard" /></label>
-            <label>Type<input id="character-type" maxlength="80" placeholder="Guard, dinosaur, alien…" /></label>
+            <label>Name<input id="character-name" required maxlength="80" /></label>
+            <label>Type<input id="character-type" maxlength="80" /></label>
             <label>Level<input id="character-level" type="number" min="1" max="100" value="1" required /></label>
             <label>Health perks<input id="health-perks" type="number" min="0" max="50" value="0" /></label>
           </div>
@@ -41,7 +41,7 @@ import SiteFooter from "../components/SiteFooter.astro";
             <span class="counter" id="skill-counter">0 / 1 points</span>
           </div>
           <div class="add-row skill-add-row">
-            <label>Skill name<input id="skill-name" maxlength="60" placeholder="Plasma Rifle" /></label>
+            <label>Skill name<input id="skill-name" maxlength="60" /></label>
             <label>Category<select id="skill-category"><option value="offence">Offence</option><option value="defence">Defence</option><option value="tactical">Tactical</option></select></label>
             <label>Rating<input id="skill-rating" type="number" min="1" max="2" value="1" /></label>
             <button class="button secondary" type="button" id="add-skill">Add skill</button>
@@ -60,7 +60,33 @@ import SiteFooter from "../components/SiteFooter.astro";
             <span class="counter" id="perk-counter">0 / 0 perks</span>
           </div>
           <div class="add-row">
-            <label>Perk name<input id="perk-name" maxlength="60" placeholder="Multitarget" /></label>
+            <label>Perk name<select id="perk-name">
+              <option value="">Select a perk</option>
+              <option>Energy</option>
+              <option>Recuperation</option>
+              <option>Desperate Energy</option>
+              <option>Energy Drain</option>
+              <option>Lethal Energy</option>
+              <option>Haste</option>
+              <option>Energy Shield</option>
+              <option>Health</option>
+              <option>Healing</option>
+              <option>Extra Healing</option>
+              <option>Magic Healing</option>
+              <option>Resistance</option>
+              <option>Evasive</option>
+              <option>Physical Damage</option>
+              <option>Lethality</option>
+              <option>Retaliation</option>
+              <option>Magic Damage</option>
+              <option>Multitarget</option>
+              <option>Range</option>
+              <option>Speed</option>
+              <option>Dash</option>
+              <option>Momentum</option>
+              <option>Action</option>
+              <option>Clutch</option>
+            </select></label>
             <label>Ranks<input id="perk-ranks" type="number" min="1" max="50" value="1" /></label>
             <button class="button secondary" type="button" id="add-perk">Add perk</button>
           </div>
@@ -240,7 +266,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     if (!name) return void (message.textContent = "Enter a perk name.");
     if (usedPerks() + ranks > rules().perks) return void (message.textContent = "That perk would exceed the perks available at this level.");
     perks.push({ id: crypto.randomUUID(), name, ranks });
-    byId<HTMLInputElement>("perk-name").value = "";
+    byId<HTMLSelectElement>("perk-name").value = "";
     byId<HTMLInputElement>("perk-ranks").value = "1";
     message.textContent = "";
     renderPerks();
