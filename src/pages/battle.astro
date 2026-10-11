@@ -162,7 +162,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   const availableUnits = [...characterTemplates, ...savedRoster.filter((saved) => !characterTemplates.some((template) => template.name === saved.name))];
 
   function renderMap() {
-    map.innerHTML = cells.map((cell) => {
+    const renderedCells = cells.map((cell) => {
       const unit = units.find((candidate) => candidate.cell === cell.index);
       const style = cell.color ? `--zone:${cell.color}` : "";
       const reachable = mode === "play" && selectedUnitId && !unit && movesRemaining > 0;
@@ -170,7 +170,8 @@ import SiteFooter from "../components/SiteFooter.astro";
         <span class="zone-label">${cell.zone}</span>
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
       </button>`;
-    }).join("");
+    });
+    map.innerHTML = Array.from({ length: 8 }, (_, row) => `<div class="hex-row${row % 2 ? " offset" : ""}">${renderedCells.slice(row * 12, row * 12 + 12).join("")}</div>`).join("");
   }
 
   function renderDeployment() {
