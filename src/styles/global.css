@@ -186,6 +186,7 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .text-button, .roster-actions button { padding: 0; border: 0; background: transparent; color: var(--rift); cursor: pointer; font: inherit; font-size: .75rem; font-weight: 700; }
 .danger { color: #e59086 !important; }
 .storage-note { margin: -1rem 0 1.5rem; color: var(--dim); font-size: .78rem; }
+.roster-heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .8rem; }
 .roster-list { display: grid; gap: .8rem; }
 .roster-card { padding: 1rem; border: 1px solid var(--line); background: var(--night); }
 .roster-card-header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }

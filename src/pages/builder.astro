@@ -79,7 +79,10 @@ import SiteFooter from "../components/SiteFooter.astro";
       <aside class="roster-panel">
         <div class="panel-title">
           <div><p class="eyebrow">Local roster</p><h2>Saved characters</h2></div>
-          <button class="text-button danger" type="button" id="clear-roster">Clear all</button>
+          <div class="roster-heading-actions">
+            <button class="text-button" type="button" id="load-starters">Load 20 templates</button>
+            <button class="text-button danger" type="button" id="clear-roster">Clear all</button>
+          </div>
         </div>
         <p class="storage-note">Stored temporarily in this browser. Nothing is uploaded.</p>
         <div id="roster-list" class="roster-list"></div>
@@ -131,6 +134,30 @@ import SiteFooter from "../components/SiteFooter.astro";
     "Action": "Gain +1 action per turn per rank.",
     "Clutch": "Gain +1 automatic success on a check per day per rank. Cannot be used for contests.",
   };
+  const skill = (name: string, category: Category, rating = 1): Skill => ({ id: crypto.randomUUID(), name, category, rating });
+  const perk = (name: string, ranks = 1): Perk => ({ id: crypto.randomUUID(), name, ranks });
+  const starterTemplates: Omit<Character, "id">[] = [
+    { name: "Neon Alley Lookout", type: "Human Scout", level: 1, healthPerks: 0, skills: [skill("Streetwise", "tactical")], perks: [], notes: "A sharp-eyed rooftop watcher with a mirror-signal kit and a cheap ray pistol." },
+    { name: "Glassback Grazer", type: "Crystal Beast", level: 2, healthPerks: 0, skills: [skill("Crystal Hide", "defence"), skill("Stampede", "offence")], perks: [perk("Physical Damage")], notes: "A herd animal whose translucent plates scatter sunlight into dazzling beams." },
+    { name: "Sunrail Guard", type: "City Guard", level: 3, healthPerks: 0, skills: [skill("Ray Carbine", "offence"), skill("Shield Drill", "defence"), skill("Crowd Control", "tactical")], perks: [perk("Range")], notes: "A disciplined guard protecting the elevated solar railways." },
+    { name: "Mire Raptor", type: "Dinosaur", level: 4, healthPerks: 0, skills: [skill("Sickle Claws", "offence", 2), skill("Reed Camouflage", "defence"), skill("Pack Hunter", "tactical")], perks: [perk("Speed"), perk("Lethality")], notes: "An amphibious feathered predator from the violet swamps." },
+    { name: "Void Dock Corsair", type: "Space Pirate", level: 5, healthPerks: 0, skills: [skill("Sunblade", "offence", 2), skill("Zero-G Reflexes", "defence", 2), skill("Dirty Tricks", "tactical")], perks: [perk("Evasive"), perk("Retaliation")], notes: "A boarding specialist in lacquered vacuum silks." },
+    { name: "Brass-Tusk Orc", type: "Space Orc Warrior", level: 6, healthPerks: 1, skills: [skill("Meteor Hammer", "offence", 2), skill("Iron Constitution", "defence", 2), skill("War Cry", "tactical", 2)], perks: [perk("Health"), perk("Physical Damage"), perk("Momentum")], notes: "A clan champion launched between worlds in a rune-powered drop pod." },
+    { name: "Riftwood Witch", type: "Frontier Mystic", level: 7, healthPerks: 0, skills: [skill("Thorn Hex", "offence", 2), skill("Barkskin", "defence", 2), skill("Rift Divination", "tactical", 2), skill("Herbal Lore", "tactical")], perks: [perk("Energy"), perk("Magic Damage"), perk("Healing")], notes: "A wandering witch carrying a garden grown from a dead world's last tree." },
+    { name: "Chromatic Basilisk", type: "Alien Monster", level: 8, healthPerks: 1, skills: [skill("Prism Gaze", "offence", 2), skill("Armoured Scales", "defence", 2), skill("Hypnotic Frill", "tactical", 2), skill("Ambush", "tactical", 2)], perks: [perk("Health"), perk("Multitarget"), perk("Resistance"), perk("Magic Damage")], notes: "Its gaze refracts victims into several possible futures at once." },
+    { name: "Helio Legion Centurion", type: "Solar Knight", level: 9, healthPerks: 1, skills: [skill("Sunlance", "offence", 2), skill("Mirror Aegis", "defence", 2), skill("Battle Command", "tactical", 2), skill("Formation Fighting", "defence", 2), skill("Duelist", "offence")], perks: [perk("Health"), perk("Energy Shield"), perk("Action"), perk("Clutch")], notes: "An officer of the golden legion, sworn to keep night from consuming the inner worlds." },
+    { name: "Dream-Eater Moth", type: "Psychic Kaiju Larva", level: 10, healthPerks: 0, skills: [skill("Mind Dust", "offence", 3), skill("Phase Wings", "defence", 3), skill("Dream Invasion", "tactical", 3), skill("Alien Senses", "tactical")], perks: [perk("Energy"), perk("Magic Damage"), perk("Evasive"), perk("Range"), perk("Multitarget")], notes: "A house-sized moth that feeds on sleeping settlements." },
+    { name: "Comet Nomad Marshal", type: "Raypunk Gunslinger", level: 12, healthPerks: 1, skills: [skill("Twin Starcasters", "offence", 3), skill("Duster Weave", "defence", 3), skill("Deadeye", "tactical", 3), skill("Bounty Lore", "tactical", 2), skill("Quickdraw", "offence")], perks: [perk("Health"), perk("Range"), perk("Action"), perk("Evasive"), perk("Lethality"), perk("Clutch")], notes: "A lawkeeper who rides the tails of comets between frontier worlds." },
+    { name: "Graviton Troll", type: "Void Giant", level: 14, healthPerks: 2, skills: [skill("Gravity Maul", "offence", 3), skill("Event-Horizon Hide", "defence", 3), skill("Mass Distortion", "tactical", 3), skill("Hurl Debris", "offence", 3), skill("Void Instinct", "defence", 2)], perks: [perk("Health", 2), perk("Resistance", 2), perk("Physical Damage"), perk("Multitarget"), perk("Range")], notes: "A hulking raider whose footsteps bend bridges and pull ships off course." },
+    { name: "Sapphire Dragon of Io", type: "Astral Dragon", level: 16, healthPerks: 2, skills: [skill("Starfire Breath", "offence", 3), skill("Sapphire Scales", "defence", 3), skill("Imperious Presence", "tactical", 3), skill("Orbital Flight", "defence", 3), skill("Ancient Memory", "tactical", 3), skill("Rending Talons", "offence")], perks: [perk("Health", 2), perk("Energy", 2), perk("Magic Damage", 2), perk("Flight"), perk("Multitarget")].filter((item) => item.name !== "Flight"), notes: "A moon-dwelling dragon who hoards radio songs and extinct languages." },
+    { name: "Obsidian Rift Tank", type: "War Machine", level: 18, healthPerks: 3, skills: [skill("Disruptor Cannon", "offence", 3), skill("Obsidian Plating", "defence", 3), skill("Targeting Oracle", "tactical", 3), skill("Siege Mortars", "offence", 3), skill("Countermeasures", "defence", 3), skill("Threat Analysis", "tactical", 3)], perks: [perk("Health", 3), perk("Resistance", 3), perk("Range", 2), perk("Multitarget", 2), perk("Physical Damage")], notes: "A relic battle tank grown from volcanic glass and commanded by a bottled oracle." },
+    { name: "Aurora Warmech", type: "Titan Warmech", level: 20, healthPerks: 4, skills: [skill("Dawn Cannon", "offence", 4), skill("Radiant Armour", "defence", 4), skill("Strategic Core", "tactical", 4), skill("Titan Fists", "offence", 4), skill("Point Defence", "defence", 2), skill("Sensor Web", "tactical", 2)], perks: [perk("Health", 4), perk("Resistance", 3), perk("Action", 2), perk("Multitarget", 2), perk("Range", 2), perk("Physical Damage", 2), perk("Energy Shield", 2)], notes: "A city-tall guardian powered by captive dawnlight." },
+    { name: "Leviathan of the Red Deep", type: "Planetary Beast", level: 24, healthPerks: 5, skills: [skill("World-Breaking Jaws", "offence", 4), skill("Abyssal Carapace", "defence", 4), skill("Tidal Instinct", "tactical", 4), skill("Crushing Coils", "offence", 4), skill("Regenerative Bulk", "defence", 4), skill("Sonar Dominion", "tactical", 4)], perks: [perk("Health", 5), perk("Resistance", 4), perk("Multitarget", 4), perk("Physical Damage", 3), perk("Range", 2)], notes: "A continent-long creature sleeping beneath an alien crimson ocean." },
+    { name: "Saint Voltara", type: "Lightning Demigod", level: 28, healthPerks: 4, skills: [skill("Judgment Bolt", "offence", 4), skill("Living Lightning", "defence", 4), skill("Divine Command", "tactical", 4), skill("Storm Step", "defence", 4), skill("Prophecy", "tactical", 4), skill("Thunder Spear", "offence", 4), skill("Sky Dominion", "tactical", 4)], perks: [perk("Health", 4), perk("Energy", 4), perk("Recuperation", 3), perk("Magic Damage", 4), perk("Action", 3), perk("Range", 4), perk("Multitarget", 3), perk("Evasive", 2)], notes: "A rebel demigod worshipped through pirate radio prayers." },
+    { name: "The Pale World-Eater", type: "Cosmic Alien", level: 32, healthPerks: 6, skills: [skill("Consume Reality", "offence", 5), skill("Impossible Anatomy", "defence", 5), skill("Cosmic Dread", "tactical", 5), skill("Void Maw", "offence", 5), skill("Beyond Time", "defence", 5), skill("Hive Command", "tactical", 5), skill("Rift Sense", "tactical", 2)], perks: [perk("Health", 6), perk("Energy", 5), perk("Resistance", 5), perk("Magic Damage", 5), perk("Multitarget", 5), perk("Range", 5), perk("Action", 3), perk("Energy Drain", 2)], notes: "A moon-pale organism that arrives before its own shadow and devours world-lines." },
+    { name: "Empress of a Thousand Suns", type: "Solar Demigod", level: 36, healthPerks: 6, skills: [skill("Solar Edict", "offence", 5), skill("Crown of Noon", "defence", 5), skill("Absolute Authority", "tactical", 5), skill("Stellar Blade", "offence", 5), skill("Fate Ward", "defence", 5), skill("Imperial Genius", "tactical", 5), skill("Worldgate Mastery", "tactical", 5), skill("Radiant Presence", "offence")], perks: [perk("Health", 6), perk("Energy", 6), perk("Recuperation", 4), perk("Magic Damage", 5), perk("Energy Shield", 5), perk("Action", 4), perk("Clutch", 3), perk("Range", 4), perk("Multitarget", 3)], notes: "An immortal sovereign whose palace orbits a chain of artificial suns." },
+    { name: "GODFRAME OMEGA", type: "Apocalypse Warmech", level: 40, healthPerks: 8, skills: [skill("Planetcracker Array", "offence", 6), skill("Causality Armour", "defence", 6), skill("War-God Intelligence", "tactical", 6), skill("Gravitic Fists", "offence", 6), skill("Probability Screen", "defence", 6), skill("Orbital Command", "tactical", 6), skill("Extinction Protocol", "offence", 4)], perks: [perk("Health", 8), perk("Energy", 8), perk("Resistance", 6), perk("Physical Damage", 5), perk("Magic Damage", 5), perk("Action", 5), perk("Range", 6), perk("Multitarget", 6), perk("Energy Shield", 4), perk("Recuperation", 4)], notes: "The last weapon of a vanished civilization, large enough to carry armies between stars." },
+  ];
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const form = byId<HTMLFormElement>("character-form");
   let skills: Skill[] = [];
@@ -372,6 +399,15 @@ import SiteFooter from "../components/SiteFooter.astro";
   byId("clear-roster").addEventListener("click", () => {
     if (!roster.length || !confirm("Delete every locally saved character?")) return;
     roster = [];
+    saveRoster();
+    renderRoster();
+  });
+  byId("load-starters").addEventListener("click", () => {
+    const existingNames = new Set(roster.map((character) => character.name));
+    const newCharacters = starterTemplates
+      .filter((template) => !existingNames.has(template.name))
+      .map((template) => ({ ...structuredClone(template), id: crypto.randomUUID() }));
+    roster = [...newCharacters, ...roster];
     saveRoster();
     renderRoster();
   });
