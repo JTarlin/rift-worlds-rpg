@@ -229,7 +229,7 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .unit-token { display: grid; width: 31px; height: 31px; margin: auto; place-items: center; border-radius: 50%; background: #07110d; font-size: .65rem; font-weight: 800; }
 .battle-sidebar { display: grid; gap: 1rem; }
 .battle-card { padding: 1rem; border: 1px solid var(--line); background: var(--night-soft); }
-.disabled-panel { opacity: .55; }
+[data-phase][hidden] { display: none !important; }
 .battle-card .panel-title { margin-bottom: 1rem; }
 .battle-card .panel-title strong { color: var(--ember); font-family: var(--display); }
 .team-tabs { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: .8rem; }

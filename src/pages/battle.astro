@@ -29,7 +29,7 @@ import SiteFooter from "../components/SiteFooter.astro";
           <button type="button" data-mode="play">3. Play match</button>
         </div>
       </div>
-      <div class="terrain-controls">
+      <div class="terrain-controls" data-phase="paint">
         <label>Terrain color<input id="zone-color" type="color" value="#28705b" /></label>
         <label>Zone name<input id="zone-name" maxlength="30" value="Riftwood" /></label>
         <button class="button secondary new-zone-button" id="new-zone" type="button">New random zone</button>
@@ -44,7 +44,7 @@ import SiteFooter from "../components/SiteFooter.astro";
           <div class="map-compass" aria-hidden="true">N</div>
           <div class="hex-map" id="hex-map" aria-label="Battle map hex grid"></div>
         </div>
-        <div class="map-library" id="map-library">
+        <div class="map-library" id="map-library" data-phase="paint">
           <div class="panel-title"><div><p class="eyebrow">Terrain archive</p><h2>Saved maps</h2></div></div>
           <div class="map-save-row">
             <label>Map name<input id="map-name" maxlength="60" /></label>
@@ -55,7 +55,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       </section>
 
       <aside class="battle-sidebar">
-        <section class="battle-card" id="deployment-panel">
+        <section class="battle-card" id="deployment-panel" data-phase="deploy">
           <div class="panel-title"><div><p class="eyebrow">Deployment</p><h2>Teams</h2></div></div>
           <div class="team-tabs">
             <button class="team-a active" type="button" data-team="A">Team A</button>
@@ -69,7 +69,7 @@ import SiteFooter from "../components/SiteFooter.astro";
           </div>
         </section>
 
-        <section class="battle-card">
+        <section class="battle-card" data-phase="play">
           <div class="panel-title"><div><p class="eyebrow">Round control</p><h2>Turn tracker</h2></div><strong id="round-label">Round 1</strong></div>
           <div class="initiative-list" id="initiative-list"></div>
           <div class="turn-buttons">
@@ -78,7 +78,7 @@ import SiteFooter from "../components/SiteFooter.astro";
           </div>
         </section>
 
-        <section class="battle-card dice-card">
+        <section class="battle-card dice-card" data-phase="play">
           <div class="panel-title"><div><p class="eyebrow">Resolution</p><h2>Dice roller</h2></div></div>
           <div class="dice-controls">
             <label>Skill bonus<input id="roll-bonus" type="number" value="0" /></label>
@@ -89,11 +89,11 @@ import SiteFooter from "../components/SiteFooter.astro";
           <ol class="roll-log" id="roll-log"></ol>
         </section>
 
-        <section class="battle-card selected-card">
+        <section class="battle-card selected-card" data-phase="play">
           <div class="panel-title"><div><p class="eyebrow">Active piece</p><h2 id="selected-name">No unit selected</h2></div></div>
           <div id="selected-unit"><p class="storage-note">Choose a deployed unit to view its skills, perks, health, and actions.</p></div>
         </section>
-        <section class="battle-card match-log-card">
+        <section class="battle-card match-log-card" data-phase="play">
           <div class="panel-title"><div><p class="eyebrow">Match record</p><h2>Activity</h2></div></div>
           <ol class="match-log" id="match-log"></ol>
         </section>
@@ -391,6 +391,20 @@ import SiteFooter from "../components/SiteFooter.astro";
     renderSelected();
   }
 
+  function setMode(nextMode: Mode) {
+    mode = nextMode;
+    pendingTemplate = mode === "deploy" ? pendingTemplate : null;
+    document.querySelectorAll<HTMLElement>("[data-mode]").forEach((item) => item.classList.toggle("active", item.dataset.mode === mode));
+    document.querySelectorAll<HTMLElement>("[data-phase]").forEach((item) => {
+      item.hidden = item.dataset.phase !== mode;
+    });
+    byId("battle-status").textContent = mode === "paint"
+      ? "Left-drag paints terrain; right-drag erases it. Connected matching hexes form one zone."
+      : mode === "deploy"
+        ? "Choose a team and unit, then left-click to place it. Right-click removes deployed units."
+        : "Select a unit, then click any hex in a reachable zone. Repositioning within the same zone is free.";
+  }
+
   document.querySelector(".team-rosters")?.addEventListener("click", (event) => {
     const remove = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-unit]");
     if (remove) {
@@ -531,10 +545,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
 
   document.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => button.addEventListener("click", () => {
-    mode = button.dataset.mode as Mode;
-    document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
-    byId("deployment-panel").classList.toggle("disabled-panel", mode === "paint");
-    byId("battle-status").textContent = mode === "paint" ? "Left-drag paints terrain; right-drag erases it. Connected matching hexes form one zone." : mode === "deploy" ? "Left-click places or selects units; right-click removes them." : "Select a unit, then click any hex in a reachable zone. Repositioning within the same zone is free.";
+    setMode(button.dataset.mode as Mode);
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-team]").forEach((button) => button.addEventListener("click", () => {
     team = button.dataset.team as Team;
@@ -558,8 +569,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   unitSelect.innerHTML = availableUnits.map((unit, index) => `<option value="${index}">${unit.name} — Level ${unit.level}</option>`).join("");
   byId("select-unit").addEventListener("click", () => {
     pendingTemplate = availableUnits[Number(unitSelect.value)];
-    mode = "deploy";
-    document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", (item as HTMLElement).dataset.mode === "deploy"));
+    setMode("deploy");
     byId("battle-status").textContent = `Place ${pendingTemplate.name} for Team ${team}.`;
   });
 
@@ -675,4 +685,5 @@ import SiteFooter from "../components/SiteFooter.astro";
   } catch {}
   renderAll();
   renderMaps();
+  setMode(mode);
 </script>
