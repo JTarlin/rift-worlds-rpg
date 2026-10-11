@@ -161,9 +161,16 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .add-row .button { min-height: 2.85rem; }
 .counter { color: var(--ember); font-size: .75rem; font-weight: 700; }
 .form-message { min-height: 1.4rem; margin: .4rem 0; color: #f0a69b; font-size: .8rem; }
-.perk-help { margin-top: .9rem; padding: .8rem 1rem; border-left: 2px solid var(--rift); background: rgba(144,226,189,.06); }
-.perk-help strong { color: var(--rift); font-family: var(--display); font-size: .82rem; }
-.perk-help p { margin: .2rem 0 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.perk-search { margin-bottom: .8rem; }
+.perk-catalog { display: grid; max-height: 420px; grid-template-columns: repeat(2, 1fr); gap: .55rem; overflow-y: auto; padding-right: .25rem; }
+.perk-option { display: grid; gap: .25rem; padding: .8rem; border: 1px solid var(--line); background: var(--night); color: inherit; cursor: pointer; font: inherit; text-align: left; }
+.perk-option:hover { border-color: rgba(144,226,189,.55); background: rgba(144,226,189,.04); }
+.perk-option.selected { border-color: var(--rift); background: rgba(144,226,189,.1); box-shadow: inset 3px 0 var(--rift); }
+.perk-option strong { color: var(--rift); font-family: var(--display); font-size: .8rem; }
+.perk-option span { color: var(--muted); font-size: .72rem; line-height: 1.45; }
+.perk-selection { display: grid; grid-template-columns: 1fr 90px auto; align-items: end; gap: .8rem; margin-top: .9rem; }
+.perk-selection p { align-self: center; margin: 0; color: var(--muted); font-size: .8rem; }
+.perk-selection .button:disabled { cursor: not-allowed; opacity: .4; transform: none; }
 .skill-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
 .skill-columns > div { min-width: 0; padding: 1rem; border: 1px solid var(--line); background: var(--night); }
 .skill-columns h3 { margin-bottom: .8rem; color: var(--rift); font-size: .82rem; text-transform: uppercase; }
@@ -226,6 +233,8 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
   .prose table { display: block; overflow-x: auto; }
   .form-grid, .skill-columns, .stat-strip { grid-template-columns: 1fr 1fr; }
   .add-row, .skill-add-row { grid-template-columns: 1fr; }
+  .perk-catalog { grid-template-columns: 1fr; }
+  .perk-selection { grid-template-columns: 1fr; }
   .site-header nav > a:nth-child(2) { display: none; }
 }
 

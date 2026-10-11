@@ -59,40 +59,12 @@ import SiteFooter from "../components/SiteFooter.astro";
             <div><p class="eyebrow">Special abilities</p><h2>Perks</h2></div>
             <span class="counter" id="perk-counter">0 / 0 perks</span>
           </div>
-          <div class="add-row">
-            <label>Perk name<select id="perk-name">
-              <option value="">Select a perk</option>
-              <option>Energy</option>
-              <option>Recuperation</option>
-              <option>Desperate Energy</option>
-              <option>Energy Drain</option>
-              <option>Lethal Energy</option>
-              <option>Haste</option>
-              <option>Energy Shield</option>
-              <option>Health</option>
-              <option>Healing</option>
-              <option>Extra Healing</option>
-              <option>Magic Healing</option>
-              <option>Resistance</option>
-              <option>Evasive</option>
-              <option>Physical Damage</option>
-              <option>Lethality</option>
-              <option>Retaliation</option>
-              <option>Magic Damage</option>
-              <option>Multitarget</option>
-              <option>Range</option>
-              <option>Speed</option>
-              <option>Dash</option>
-              <option>Momentum</option>
-              <option>Action</option>
-              <option>Clutch</option>
-            </select></label>
+          <label class="perk-search">Find a perk<input id="perk-search" type="search" placeholder="Filter by name or effect" /></label>
+          <div class="perk-catalog" id="perk-catalog" aria-label="Available perks"></div>
+          <div class="perk-selection">
+            <p id="selected-perk">Select a perk from the catalog.</p>
             <label>Ranks<input id="perk-ranks" type="number" min="1" max="50" value="1" /></label>
-            <button class="button secondary" type="button" id="add-perk">Add perk</button>
-          </div>
-          <div class="perk-help" id="perk-help" aria-live="polite">
-            <strong>Select a perk</strong>
-            <p>Choose a perk to see its rules before adding it.</p>
+            <button class="button secondary" type="button" id="add-perk" disabled>Add selected perk</button>
           </div>
           <p class="form-message" id="perk-message" role="status"></p>
           <ul class="tag-list" id="perk-list"></ul>
@@ -164,6 +136,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   let skills: Skill[] = [];
   let perks: Perk[] = [];
   let roster: Character[] = loadRoster();
+  let selectedPerk = "";
 
   function loadRoster(): Character[] {
     try {
@@ -240,12 +213,18 @@ import SiteFooter from "../components/SiteFooter.astro";
     updateStats();
   }
 
-  function renderPerkHelp() {
-    const name = value("perk-name");
-    const help = byId("perk-help");
-    help.innerHTML = name
-      ? `<strong>${escapeHtml(name)}</strong><p>${escapeHtml(perkDescriptions[name])}</p>`
-      : `<strong>Select a perk</strong><p>Choose a perk to see its rules before adding it.</p>`;
+  function renderPerkCatalog() {
+    const query = value("perk-search").toLowerCase();
+    const matches = Object.entries(perkDescriptions).filter(([name, description]) =>
+      `${name} ${description}`.toLowerCase().includes(query)
+    );
+    byId("perk-catalog").innerHTML = matches.length
+      ? matches.map(([name, description]) => `<button type="button" class="perk-option${selectedPerk === name ? " selected" : ""}" data-perk="${escapeHtml(name)}" aria-pressed="${selectedPerk === name}">
+          <strong>${escapeHtml(name)}</strong><span>${escapeHtml(description)}</span>
+        </button>`).join("")
+      : `<p class="empty">No perks match this filter.</p>`;
+    byId("selected-perk").textContent = selectedPerk ? `Selected: ${selectedPerk}` : "Select a perk from the catalog.";
+    byId<HTMLButtonElement>("add-perk").disabled = !selectedPerk;
   }
 
   function renderRoster() {
@@ -298,16 +277,17 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
 
   byId("add-perk").addEventListener("click", () => {
-    const name = value("perk-name");
+    const name = selectedPerk;
     const ranks = Math.max(1, numberValue("perk-ranks"));
     const message = byId("perk-message");
     if (!name) return void (message.textContent = "Enter a perk name.");
     if (usedPerks() + ranks > rules().perks) return void (message.textContent = "That perk would exceed the perks available at this level.");
     perks.push({ id: crypto.randomUUID(), name, ranks });
-    byId<HTMLSelectElement>("perk-name").value = "";
+    selectedPerk = "";
     byId<HTMLInputElement>("perk-ranks").value = "1";
     message.textContent = "";
     renderPerks();
+    renderPerkCatalog();
   });
 
   byId("skill-columns").addEventListener("click", (event) => {
@@ -325,7 +305,13 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
 
   ["character-level", "health-perks"].forEach((id) => byId(id).addEventListener("input", updateStats));
-  byId("perk-name").addEventListener("change", renderPerkHelp);
+  byId("perk-search").addEventListener("input", renderPerkCatalog);
+  byId("perk-catalog").addEventListener("click", (event) => {
+    const option = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-perk]");
+    if (!option) return;
+    selectedPerk = option.dataset.perk || "";
+    renderPerkCatalog();
+  });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -392,6 +378,6 @@ import SiteFooter from "../components/SiteFooter.astro";
 
   renderSkills();
   renderPerks();
-  renderPerkHelp();
+  renderPerkCatalog();
   renderRoster();
 </script>
