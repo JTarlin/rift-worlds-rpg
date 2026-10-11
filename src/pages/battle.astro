@@ -1,0 +1,322 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+---
+
+<BaseLayout title="Battle Map" description="Build a hex-zone battlefield, deploy two teams, roll dice, and track a Rift Worlds encounter.">
+  <SiteHeader />
+  <main id="main-content" class="shell battle-page">
+    <header class="battle-heading">
+      <div>
+        <p class="eyebrow">Tactical workspace</p>
+        <h1>Battle Map</h1>
+        <p class="lede">Paint zones onto the hex grid, deploy two teams, and run a complete local encounter.</p>
+      </div>
+      <div class="battle-file-actions">
+        <button class="button secondary" id="new-battle" type="button">New battle</button>
+        <button class="button primary" id="save-battle" type="button">Save locally</button>
+      </div>
+    </header>
+
+    <section class="battle-toolbar">
+      <div>
+        <span class="toolbar-label">Mode</span>
+        <div class="segmented">
+          <button type="button" class="active" data-mode="paint">Paint zones</button>
+          <button type="button" data-mode="deploy">Deploy units</button>
+          <button type="button" data-mode="play">Play</button>
+        </div>
+      </div>
+      <label>Zone color<input id="zone-color" type="color" value="#28705b" /></label>
+      <label>Zone name<input id="zone-name" maxlength="30" value="Riftwood" /></label>
+      <button class="text-button" id="erase-toggle" type="button">Eraser off</button>
+      <span class="battle-status" id="battle-status">Paint connected hexes to define battlefield zones.</span>
+    </section>
+
+    <div class="battle-layout">
+      <section class="map-panel">
+        <div class="hex-map" id="hex-map" aria-label="Battle map hex grid"></div>
+      </section>
+
+      <aside class="battle-sidebar">
+        <section class="battle-card" id="deployment-panel">
+          <div class="panel-title"><div><p class="eyebrow">Deployment</p><h2>Teams</h2></div></div>
+          <div class="team-tabs">
+            <button class="team-a active" type="button" data-team="A">Team A</button>
+            <button class="team-b" type="button" data-team="B">Team B</button>
+          </div>
+          <label>Choose unit<select id="unit-template"></select></label>
+          <button class="button secondary full-button" id="select-unit" type="button">Ready unit for placement</button>
+          <div class="team-rosters">
+            <div><h3>Team A</h3><ul id="team-a-list"></ul></div>
+            <div><h3>Team B</h3><ul id="team-b-list"></ul></div>
+          </div>
+        </section>
+
+        <section class="battle-card">
+          <div class="panel-title"><div><p class="eyebrow">Round control</p><h2>Turn tracker</h2></div><strong id="round-label">Round 1</strong></div>
+          <div class="initiative-list" id="initiative-list"></div>
+          <div class="turn-buttons">
+            <button class="button secondary" id="start-match" type="button">Roll initiative</button>
+            <button class="button primary" id="next-turn" type="button">Next turn</button>
+          </div>
+        </section>
+
+        <section class="battle-card dice-card">
+          <div class="panel-title"><div><p class="eyebrow">Resolution</p><h2>Dice roller</h2></div></div>
+          <div class="dice-controls">
+            <label>Skill bonus<input id="roll-bonus" type="number" value="0" /></label>
+            <label class="check-label"><input id="roll-advantage" type="checkbox" /> Advantage</label>
+          </div>
+          <button class="button primary full-button" id="roll-dice" type="button">Roll 2d6</button>
+          <div class="dice-result" id="dice-result" aria-live="polite">—</div>
+          <ol class="roll-log" id="roll-log"></ol>
+        </section>
+
+        <section class="battle-card selected-card">
+          <div class="panel-title"><div><p class="eyebrow">Active piece</p><h2 id="selected-name">No unit selected</h2></div></div>
+          <div id="selected-unit"><p class="storage-note">Choose a deployed unit to view its skills, perks, health, and actions.</p></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  import { characterTemplates, type CharacterTemplate } from "../data/templates";
+  type Mode = "paint" | "deploy" | "play";
+  type Team = "A" | "B";
+  type Cell = { index: number; zone: string; color: string };
+  type Unit = CharacterTemplate & { id: string; team: Team; cell: number; currentHealth: number; actionsUsed: number; initiative: number };
+  const storageKey = "rift-worlds-battle-v1";
+  const rosterKey = "rift-worlds-character-roster-v1";
+  const map = document.getElementById("hex-map") as HTMLElement;
+  const cells: Cell[] = Array.from({ length: 96 }, (_, index) => ({ index, zone: "", color: "" }));
+  let mode: Mode = "paint";
+  let team: Team = "A";
+  let erasing = false;
+  let pendingTemplate: CharacterTemplate | null = null;
+  let units: Unit[] = [];
+  let selectedUnitId = "";
+  let initiative: string[] = [];
+  let turnIndex = 0;
+  let round = 1;
+
+  const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const healthFor = (unit: CharacterTemplate) => Math.ceil(unit.level / 2) + unit.healthPerks * 3;
+  const actionsFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Action")?.ranks || 0);
+  const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
+  const perkRules: Record<string, string> = {
+    Energy: "Gain +3 maximum energy per rank.",
+    Recuperation: "Recover +2 additional energy at the end of each turn.",
+    "Desperate Energy": "Recover energy after failed checks or contests.",
+    "Energy Drain": "Recover energy whenever this unit deals damage.",
+    "Lethal Energy": "Energy spent on damage grants +2 magical damage per rank.",
+    Haste: "Spend energy to gain additional actions.",
+    "Energy Shield": "Spend energy to block damage to this unit or a visible ally.",
+    Health: "Already included in maximum health.",
+    Healing: "Restore health to this unit or an ally in its zone.",
+    "Extra Healing": "Use Healing additional times each turn.",
+    "Magic Healing": "Spend energy to restore health at range.",
+    Resistance: "Reduce incoming damage each turn.",
+    Evasive: "Gain advantage on defensive rolls.",
+    "Physical Damage": "Add physical damage when an attack succeeds.",
+    Lethality: "Deal additional damage when attacking with advantage.",
+    Retaliation: "Attack back when attacked.",
+    "Magic Damage": "Add magical damage when an effect succeeds.",
+    Multitarget: "Affect additional targets in the same zone.",
+    Range: "Attack into additional zones.",
+    Speed: "Move through additional zones.",
+    Dash: "Gain additional movements each turn.",
+    Momentum: "Add damage after moving before a melee attack.",
+    Action: "Already included in available actions.",
+    Clutch: "Turn a check into an automatic success; not valid for contests.",
+  };
+  const savedRoster = (() => {
+    try { return JSON.parse(localStorage.getItem(rosterKey) || "[]") as CharacterTemplate[]; }
+    catch { return []; }
+  })();
+  const availableUnits = [...characterTemplates, ...savedRoster.filter((saved) => !characterTemplates.some((template) => template.name === saved.name))];
+
+  function renderMap() {
+    map.innerHTML = cells.map((cell) => {
+      const unit = units.find((candidate) => candidate.cell === cell.index);
+      const style = cell.color ? `--zone:${cell.color}` : "";
+      return `<button type="button" class="hex${cell.zone ? " painted" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.zone || "Unpainted hex"}">
+        <span class="zone-label">${cell.zone}</span>
+        ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
+      </button>`;
+    }).join("");
+  }
+
+  function renderDeployment() {
+    (["A", "B"] as Team[]).forEach((side) => {
+      const list = byId(`team-${side.toLowerCase()}-list`);
+      const sideUnits = units.filter((unit) => unit.team === side);
+      list.innerHTML = sideUnits.length ? sideUnits.map((unit) => `<li><button type="button" data-unit="${unit.id}">${unit.name}<span>${unit.currentHealth} HP</span></button></li>`).join("") : `<li class="empty">No units deployed</li>`;
+    });
+  }
+
+  function renderInitiative() {
+    byId("round-label").textContent = `Round ${round}`;
+    byId("initiative-list").innerHTML = initiative.length
+      ? initiative.map((id, index) => {
+          const unit = units.find((candidate) => candidate.id === id);
+          return unit ? `<button type="button" data-unit="${unit.id}" class="${index === turnIndex ? "active" : ""}"><span>${index + 1}</span>${unit.name}<strong>${unit.initiative}</strong></button>` : "";
+        }).join("")
+      : `<p class="storage-note">Deploy units, then roll initiative.</p>`;
+  }
+
+  function renderSelected() {
+    const unit = units.find((candidate) => candidate.id === selectedUnitId);
+    byId("selected-name").textContent = unit?.name || "No unit selected";
+    if (!unit) {
+      byId("selected-unit").innerHTML = `<p class="storage-note">Choose a deployed unit to view its skills, perks, health, and actions.</p>`;
+      return;
+    }
+    const maxHealth = healthFor(unit);
+    byId("selected-unit").innerHTML = `
+      <div class="unit-vitals"><label>Health <input id="unit-health" type="number" min="0" max="${maxHealth}" value="${unit.currentHealth}"></label><span>/ ${maxHealth}</span></div>
+      <div class="unit-vitals"><label>Actions used <input id="unit-actions" type="number" min="0" max="${actionsFor(unit)}" value="${unit.actionsUsed}"></label><span>/ ${actionsFor(unit)}</span></div>
+      <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"}</p>
+      <div class="usable-list">${(["offence", "defence", "tactical"] as const).map((category) => `<div><h3>${category}</h3>${unit.skills.filter((skill) => skill.category === category).map((skill) => `<button type="button" data-skill="${skill.rating}">${skill.name} ${skill.rating}</button>`).join("") || "<span>None</span>"}</div>`).join("")}</div>
+      <div class="perk-use-list"><h3>Perks</h3>${unit.perks.map((perk) => `<button type="button" data-perk="${perk.name}">${perk.name}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}</button>`).join("") || "<span>None</span>"}</div>
+      <button class="text-button danger" id="remove-unit" type="button">Remove from battle</button>`;
+    byId<HTMLInputElement>("unit-health").addEventListener("change", (event) => {
+      unit.currentHealth = Number((event.target as HTMLInputElement).value);
+      renderDeployment();
+    });
+    byId<HTMLInputElement>("unit-actions").addEventListener("change", (event) => unit.actionsUsed = Number((event.target as HTMLInputElement).value));
+    byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-skill]").forEach((button) => button.addEventListener("click", () => {
+      if (unit.actionsUsed >= actionsFor(unit)) {
+        byId("battle-status").textContent = `${unit.name} has no actions remaining this turn.`;
+        return;
+      }
+      unit.actionsUsed += 1;
+      byId<HTMLInputElement>("roll-bonus").value = button.dataset.skill || "0";
+      byId("battle-status").textContent = `${unit.name} uses ${button.textContent}. One action spent; roll when ready.`;
+      renderSelected();
+    }));
+    byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-perk]").forEach((button) => button.addEventListener("click", () => {
+      const name = button.dataset.perk || "";
+      byId("battle-status").textContent = `${unit.name} uses ${name}: ${perkRules[name] || "Apply the perk's listed effect."}`;
+    }));
+    byId("remove-unit").addEventListener("click", () => {
+      units = units.filter((candidate) => candidate.id !== unit.id);
+      initiative = initiative.filter((id) => id !== unit.id);
+      selectedUnitId = "";
+      renderAll();
+    });
+  }
+
+  function renderAll() {
+    renderMap();
+    renderDeployment();
+    renderInitiative();
+    renderSelected();
+  }
+
+  map.addEventListener("click", (event) => {
+    const hex = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-cell]");
+    if (!hex) return;
+    const cell = cells[Number(hex.dataset.cell)];
+    const occupying = units.find((unit) => unit.cell === cell.index);
+    if (mode === "paint") {
+      cell.zone = erasing ? "" : byId<HTMLInputElement>("zone-name").value.trim();
+      cell.color = erasing ? "" : byId<HTMLInputElement>("zone-color").value;
+    } else if (mode === "deploy" && pendingTemplate && !occupying) {
+      units.push({ ...structuredClone(pendingTemplate), id: crypto.randomUUID(), team, cell: cell.index, currentHealth: healthFor(pendingTemplate), actionsUsed: 0, initiative: 0 });
+      pendingTemplate = null;
+      byId("battle-status").textContent = "Unit deployed. Select another unit or switch to play mode.";
+    } else if (occupying) {
+      if (mode === "play" && selectedUnitId && selectedUnitId !== occupying.id) return;
+      selectedUnitId = occupying.id;
+    } else if (mode === "play" && selectedUnitId) {
+      const unit = units.find((candidate) => candidate.id === selectedUnitId);
+      if (unit) unit.cell = cell.index;
+    }
+    renderAll();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => button.addEventListener("click", () => {
+    mode = button.dataset.mode as Mode;
+    document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
+    byId("battle-status").textContent = mode === "paint" ? "Paint connected hexes to define battlefield zones." : mode === "deploy" ? "Choose a unit and click a starting hex." : "Select a unit, then click an empty hex to move it.";
+  }));
+  document.querySelectorAll<HTMLButtonElement>("[data-team]").forEach((button) => button.addEventListener("click", () => {
+    team = button.dataset.team as Team;
+    document.querySelectorAll("[data-team]").forEach((item) => item.classList.toggle("active", item === button));
+  }));
+  byId("erase-toggle").addEventListener("click", () => {
+    erasing = !erasing;
+    byId("erase-toggle").textContent = `Eraser ${erasing ? "on" : "off"}`;
+  });
+
+  const unitSelect = byId<HTMLSelectElement>("unit-template");
+  unitSelect.innerHTML = availableUnits.map((unit, index) => `<option value="${index}">${unit.name} — Level ${unit.level}</option>`).join("");
+  byId("select-unit").addEventListener("click", () => {
+    pendingTemplate = availableUnits[Number(unitSelect.value)];
+    mode = "deploy";
+    document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", (item as HTMLElement).dataset.mode === "deploy"));
+    byId("battle-status").textContent = `Place ${pendingTemplate.name} for Team ${team}.`;
+  });
+
+  byId("start-match").addEventListener("click", () => {
+    units.forEach((unit) => {
+      const tactical = Math.max(0, ...unit.skills.filter((skill) => skill.category === "tactical").map((skill) => skill.rating));
+      unit.initiative = Math.ceil(Math.random() * 6) + Math.ceil(Math.random() * 6) + tactical;
+      unit.actionsUsed = 0;
+    });
+    initiative = [...units].sort((a, b) => b.initiative - a.initiative || (a.team === "A" ? -1 : 1)).map((unit) => unit.id);
+    turnIndex = 0;
+    round = 1;
+    selectedUnitId = initiative[0] || "";
+    renderAll();
+  });
+  byId("next-turn").addEventListener("click", () => {
+    if (!initiative.length) return;
+    turnIndex += 1;
+    if (turnIndex >= initiative.length) {
+      turnIndex = 0;
+      round += 1;
+      units.forEach((unit) => unit.actionsUsed = 0);
+    }
+    selectedUnitId = initiative[turnIndex];
+    renderAll();
+  });
+
+  byId("roll-dice").addEventListener("click", () => {
+    const dice = [1, 2, 3].map(() => Math.ceil(Math.random() * 6));
+    const advantage = byId<HTMLInputElement>("roll-advantage").checked;
+    const kept = advantage ? dice.sort((a, b) => b - a).slice(0, 2) : dice.slice(0, 2);
+    const bonus = Number(byId<HTMLInputElement>("roll-bonus").value) || 0;
+    const total = kept[0] + kept[1] + bonus;
+    byId("dice-result").innerHTML = `<strong>${total}</strong><span>${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${advantage ? " (advantage)" : ""}</span>`;
+    const entry = document.createElement("li");
+    entry.textContent = `${total}: ${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}`;
+    byId("roll-log").prepend(entry);
+  });
+
+  byId("save-battle").addEventListener("click", () => {
+    localStorage.setItem(storageKey, JSON.stringify({ cells, units, initiative, turnIndex, round }));
+    byId("battle-status").textContent = "Battle saved in this browser.";
+  });
+  byId("new-battle").addEventListener("click", () => {
+    if (!confirm("Clear the current map and battle?")) return;
+    cells.forEach((cell) => Object.assign(cell, { zone: "", color: "" }));
+    units = []; initiative = []; turnIndex = 0; round = 1; selectedUnitId = "";
+    localStorage.removeItem(storageKey);
+    renderAll();
+  });
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if (saved) {
+      saved.cells?.forEach((cell: Cell, index: number) => Object.assign(cells[index], cell));
+      units = saved.units || []; initiative = saved.initiative || []; turnIndex = saved.turnIndex || 0; round = saved.round || 1;
+    }
+  } catch {}
+  renderAll();
+</script>
