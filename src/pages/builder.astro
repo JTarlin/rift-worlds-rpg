@@ -90,6 +90,10 @@ import SiteFooter from "../components/SiteFooter.astro";
             <label>Ranks<input id="perk-ranks" type="number" min="1" max="50" value="1" /></label>
             <button class="button secondary" type="button" id="add-perk">Add perk</button>
           </div>
+          <div class="perk-help" id="perk-help" aria-live="polite">
+            <strong>Select a perk</strong>
+            <p>Choose a perk to see its rules before adding it.</p>
+          </div>
           <p class="form-message" id="perk-message" role="status"></p>
           <ul class="tag-list" id="perk-list"></ul>
         </section>
@@ -129,6 +133,32 @@ import SiteFooter from "../components/SiteFooter.astro";
   };
 
   const storageKey = "rift-worlds-character-roster-v1";
+  const perkDescriptions: Record<string, string> = {
+    "Energy": "Gain +3 maximum energy per rank. Spend energy before a roll for +1, or for +1 magical damage. Recuperate 1 energy at the end of your turn.",
+    "Recuperation": "Recuperate +2 additional energy per rank at the end of each turn, up to your maximum.",
+    "Desperate Energy": "Recuperate +1 energy per rank whenever you fail a skill check or contest on your turn.",
+    "Energy Drain": "Regain +1 energy per rank whenever you damage a creature.",
+    "Lethal Energy": "Energy spent on damage deals +2 magical damage per rank instead.",
+    "Haste": "Spend 1 energy to gain +1 action per rank.",
+    "Energy Shield": "When you or a visible ally takes damage, spend 1 energy to block +2 damage per rank.",
+    "Health": "Gain +3 health per rank.",
+    "Healing": "Once per turn, restore +1 health per rank to yourself or an ally in your zone.",
+    "Extra Healing": "Use Healing +1 additional time per turn per rank.",
+    "Magic Healing": "Spend energy to restore +2 health per energy to yourself or an ally you can see.",
+    "Resistance": "Gain +1 damage resistance per rank; take that much less damage each turn.",
+    "Evasive": "Gain advantage on +1 defensive check or contest per round per rank.",
+    "Physical Damage": "Deal +1 damage per rank with weapons, unarmed attacks, and other physical sources.",
+    "Lethality": "Deal +2 damage per rank when attacking with advantage.",
+    "Retaliation": "Attack back +1 time per turn per rank when attacked.",
+    "Magic Damage": "Deal +1 damage per rank with magical effects.",
+    "Multitarget": "Target +1 additional character per rank in a zone with an attack.",
+    "Range": "Target characters +1 additional zone away per rank with attacks.",
+    "Speed": "Gain +1 movement speed per rank.",
+    "Dash": "Gain +1 movement per turn per rank.",
+    "Momentum": "Deal +1 damage per rank and distance moved on your first melee attack after moving.",
+    "Action": "Gain +1 action per turn per rank.",
+    "Clutch": "Gain +1 automatic success on a check per day per rank. Cannot be used for contests.",
+  };
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const form = byId<HTMLFormElement>("character-form");
   let skills: Skill[] = [];
@@ -210,6 +240,14 @@ import SiteFooter from "../components/SiteFooter.astro";
     updateStats();
   }
 
+  function renderPerkHelp() {
+    const name = value("perk-name");
+    const help = byId("perk-help");
+    help.innerHTML = name
+      ? `<strong>${escapeHtml(name)}</strong><p>${escapeHtml(perkDescriptions[name])}</p>`
+      : `<strong>Select a perk</strong><p>Choose a perk to see its rules before adding it.</p>`;
+  }
+
   function renderRoster() {
     const list = byId("roster-list");
     list.innerHTML = roster.length
@@ -287,6 +325,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
 
   ["character-level", "health-perks"].forEach((id) => byId(id).addEventListener("input", updateStats));
+  byId("perk-name").addEventListener("change", renderPerkHelp);
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -353,5 +392,6 @@ import SiteFooter from "../components/SiteFooter.astro";
 
   renderSkills();
   renderPerks();
+  renderPerkHelp();
   renderRoster();
 </script>
