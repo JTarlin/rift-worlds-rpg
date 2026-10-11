@@ -123,6 +123,8 @@ import SiteFooter from "../components/SiteFooter.astro";
   let turnIndex = 0;
   let round = 1;
   let pointerPainting = false;
+  let contextErasing = false;
+  let paintDragged = false;
   let movesRemaining = 0;
 
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -269,8 +271,9 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
 
   function paintCell(cell: Cell) {
-    cell.zone = erasing ? "" : byId<HTMLInputElement>("zone-name").value.trim();
-    cell.color = erasing ? "" : byId<HTMLInputElement>("zone-color").value;
+    const shouldErase = erasing || contextErasing;
+    cell.zone = shouldErase ? "" : byId<HTMLInputElement>("zone-name").value.trim();
+    cell.color = shouldErase ? "" : byId<HTMLInputElement>("zone-color").value;
   }
 
   function logActivity(message: string) {
@@ -309,24 +312,66 @@ import SiteFooter from "../components/SiteFooter.astro";
   map.addEventListener("pointerdown", (event) => {
     const hex = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-cell]");
     if (!hex) return;
-    pointerPainting = mode === "paint";
+    if (event.button === 2) {
+      event.preventDefault();
+      contextErasing = true;
+      if (mode === "paint") {
+        pointerPainting = true;
+        paintCell(cells[Number(hex.dataset.cell)]);
+        renderMap();
+      }
+      return;
+    }
+    if (mode === "paint") {
+      pointerPainting = true;
+      paintDragged = false;
+      return;
+    }
     handleCell(Number(hex.dataset.cell));
   });
   map.addEventListener("pointerover", (event) => {
     if (!pointerPainting || mode !== "paint") return;
     const hex = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-cell]");
     if (hex) {
+      paintDragged = true;
       paintCell(cells[Number(hex.dataset.cell)]);
       renderMap();
     }
   });
-  window.addEventListener("pointerup", () => pointerPainting = false);
+  window.addEventListener("pointerup", () => {
+    pointerPainting = false;
+    contextErasing = false;
+    paintDragged = false;
+  });
+  map.addEventListener("click", (event) => {
+    if (mode !== "paint" || paintDragged) return;
+    event.preventDefault();
+    byId("battle-status").textContent = "Hold the left mouse button and drag across hexes to paint.";
+  });
+  map.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    const hex = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-cell]");
+    if (!hex) return;
+    const cellIndex = Number(hex.dataset.cell);
+    if (mode === "paint") {
+      paintCell(cells[cellIndex]);
+      renderMap();
+    } else if (mode === "deploy") {
+      const unit = units.find((candidate) => candidate.cell === cellIndex);
+      if (!unit) return;
+      units = units.filter((candidate) => candidate.id !== unit.id);
+      initiative = initiative.filter((id) => id !== unit.id);
+      if (selectedUnitId === unit.id) selectedUnitId = "";
+      logActivity(`${unit.name} removed from the battle.`);
+      renderAll();
+    }
+  });
 
   document.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => button.addEventListener("click", () => {
     mode = button.dataset.mode as Mode;
     document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
     byId("deployment-panel").classList.toggle("disabled-panel", mode === "paint");
-    byId("battle-status").textContent = mode === "paint" ? "Click and drag across hexes to paint terrain." : mode === "deploy" ? "Choose a team and unit, then click a starting hex." : "Select a unit, then move it one hex at a time up to its movement allowance.";
+    byId("battle-status").textContent = mode === "paint" ? "Left-drag paints terrain; right-drag erases it." : mode === "deploy" ? "Left-click places or selects units; right-click removes them." : "Select a unit, then move it one hex at a time up to its movement allowance.";
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-team]").forEach((button) => button.addEventListener("click", () => {
     team = button.dataset.team as Team;
