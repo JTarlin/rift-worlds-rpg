@@ -260,9 +260,11 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .unit-vitals span { padding-bottom: .45rem; color: var(--dim); }
 .unit-meta { color: var(--muted); font-size: .74rem; }
 .usable-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; }
-.usable-list h3, .perk-use-list h3 { margin: 0 0 .35rem; color: var(--rift); font-size: .65rem; text-transform: uppercase; }
-.usable-list button, .perk-use-list button { display: block; width: 100%; margin-bottom: .25rem; padding: .35rem; border: 1px solid var(--line); background: var(--night); color: var(--muted); cursor: pointer; font: inherit; font-size: .62rem; text-align: left; }
-.usable-list span, .perk-use-list span { color: var(--dim); font-size: .65rem; }
+.usable-list h3, .perk-use-list h3, .energy-use-list h3 { margin: 0 0 .35rem; color: var(--rift); font-size: .65rem; text-transform: uppercase; }
+.usable-list button, .perk-use-list button, .energy-use-list button { display: block; width: 100%; margin-bottom: .25rem; padding: .35rem; border: 1px solid var(--line); background: var(--night); color: var(--muted); cursor: pointer; font: inherit; font-size: .62rem; text-align: left; }
+.usable-list span, .perk-use-list span, .energy-use-list span { color: var(--dim); font-size: .65rem; }
+.energy-use-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: .25rem; margin-block: .8rem; }
+.energy-use-list h3, .energy-use-list span { grid-column: 1 / -1; }
 .perk-use-list { margin-block: .8rem; }
 .map-library { margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); background: var(--night-soft); }
 .map-save-row { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: .7rem; }

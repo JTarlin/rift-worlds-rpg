@@ -107,7 +107,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   type Mode = "paint" | "deploy" | "play";
   type Team = "A" | "B";
   type Cell = { index: number; zone: string; color: string };
-  type Unit = CharacterTemplate & { id: string; team: Team; cell: number; currentHealth: number; actionsUsed: number; initiative: number };
+  type Unit = CharacterTemplate & { id: string; team: Team; cell: number; currentHealth: number; currentEnergy: number; actionsUsed: number; initiative: number };
   const storageKey = "rift-worlds-battle-v1";
   const mapsKey = "rift-worlds-maps-v1";
   const rosterKey = "rift-worlds-character-roster-v1";
@@ -126,9 +126,13 @@ import SiteFooter from "../components/SiteFooter.astro";
   let contextErasing = false;
   let paintDragged = false;
   let movesRemaining = 0;
+  let pendingEnergyBoost = 0;
+  let pendingEnergyDamage = 0;
 
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const healthFor = (unit: CharacterTemplate) => Math.ceil(unit.level / 2) + unit.healthPerks * 3;
+  const perkRanks = (unit: CharacterTemplate, name: string) => unit.perks.find((perk) => perk.name === name)?.ranks || 0;
+  const energyFor = (unit: CharacterTemplate) => perkRanks(unit, "Energy") * 3;
   const actionsFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Action")?.ranks || 0);
   const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
   const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.color}`;
@@ -267,10 +271,20 @@ import SiteFooter from "../components/SiteFooter.astro";
       return;
     }
     const maxHealth = healthFor(unit);
+    const maxEnergy = energyFor(unit);
+    const energyAbilities = [
+      maxEnergy ? `<button type="button" data-energy-use="roll">Boost next roll +1</button>` : "",
+      maxEnergy ? `<button type="button" data-energy-use="damage">Empower next attack</button>` : "",
+      perkRanks(unit, "Haste") ? `<button type="button" data-energy-use="haste">Haste: gain ${perkRanks(unit, "Haste")} action${perkRanks(unit, "Haste") === 1 ? "" : "s"}</button>` : "",
+      perkRanks(unit, "Energy Shield") ? `<button type="button" data-energy-use="shield">Energy Shield: block ${perkRanks(unit, "Energy Shield") * 2} damage</button>` : "",
+      perkRanks(unit, "Magic Healing") ? `<button type="button" data-energy-use="healing">Magic Healing: restore 2 health</button>` : "",
+    ].filter(Boolean);
     byId("selected-unit").innerHTML = `
       <div class="unit-vitals"><label>Health <input id="unit-health" type="number" min="0" max="${maxHealth}" value="${unit.currentHealth}"></label><span>/ ${maxHealth}</span></div>
+      <div class="unit-vitals"><label>Energy <input id="unit-energy" type="number" min="0" max="${maxEnergy}" value="${unit.currentEnergy}"></label><span>/ ${maxEnergy}</span></div>
       <div class="unit-vitals"><label>Actions used <input id="unit-actions" type="number" min="0" max="${actionsFor(unit)}" value="${unit.actionsUsed}"></label><span>/ ${actionsFor(unit)}</span></div>
       <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"} · ${movesRemaining} remaining</p>
+      <div class="energy-use-list"><h3>Spend energy</h3>${energyAbilities.join("") || "<span>This unit has no energy pool.</span>"}</div>
       <div class="usable-list">${(["offence", "defence", "tactical"] as const).map((category) => `<div><h3>${category}</h3>${unit.skills.filter((skill) => skill.category === category).map((skill) => `<button type="button" data-skill="${skill.rating}">${skill.name} ${skill.rating}</button>`).join("") || "<span>None</span>"}</div>`).join("")}</div>
       <div class="perk-use-list"><h3>Perks</h3>${unit.perks.map((perk) => `<button type="button" data-perk="${perk.name}">${perk.name}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}</button>`).join("") || "<span>None</span>"}</div>
       <button class="button secondary full-button" id="reset-movement" type="button">Reset movement</button>
@@ -279,7 +293,36 @@ import SiteFooter from "../components/SiteFooter.astro";
       unit.currentHealth = Number((event.target as HTMLInputElement).value);
       renderDeployment();
     });
+    byId<HTMLInputElement>("unit-energy").addEventListener("change", (event) => {
+      unit.currentEnergy = Math.max(0, Math.min(maxEnergy, Number((event.target as HTMLInputElement).value)));
+      renderSelected();
+    });
     byId<HTMLInputElement>("unit-actions").addEventListener("change", (event) => unit.actionsUsed = Number((event.target as HTMLInputElement).value));
+    byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-energy-use]").forEach((button) => button.addEventListener("click", () => {
+      if (unit.currentEnergy < 1) {
+        byId("battle-status").textContent = `${unit.name} has no energy remaining.`;
+        return;
+      }
+      const use = button.dataset.energyUse;
+      unit.currentEnergy -= 1;
+      if (use === "roll") {
+        pendingEnergyBoost += 1;
+        byId("battle-status").textContent = `${unit.name} spends 1 energy for +1 on the next roll.`;
+      } else if (use === "damage") {
+        pendingEnergyDamage += 1 + perkRanks(unit, "Lethal Energy") * 2;
+        byId("battle-status").textContent = `${unit.name} spends 1 energy to add ${pendingEnergyDamage} magical damage to the next successful attack.`;
+      } else if (use === "haste") {
+        unit.actionsUsed = Math.max(0, unit.actionsUsed - perkRanks(unit, "Haste"));
+        byId("battle-status").textContent = `${unit.name} spends 1 energy and gains ${perkRanks(unit, "Haste")} action${perkRanks(unit, "Haste") === 1 ? "" : "s"}.`;
+      } else if (use === "shield") {
+        byId("battle-status").textContent = `${unit.name} spends 1 energy to block ${perkRanks(unit, "Energy Shield") * 2} damage to itself or a visible ally.`;
+      } else if (use === "healing") {
+        unit.currentHealth = Math.min(maxHealth, unit.currentHealth + 2);
+        byId("battle-status").textContent = `${unit.name} spends 1 energy and restores 2 health. Select another unit first to heal that ally instead.`;
+      }
+      logActivity(`${unit.name} spends 1 energy: ${button.textContent}.`);
+      renderSelected();
+    }));
     byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-skill]").forEach((button) => button.addEventListener("click", () => {
       if (unit.actionsUsed >= actionsFor(unit)) {
         byId("battle-status").textContent = `${unit.name} has no actions remaining this turn.`;
@@ -353,7 +396,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     if (mode === "paint") {
       paintCell(cell);
     } else if (mode === "deploy" && pendingTemplate && !occupying) {
-      const deployed = { ...structuredClone(pendingTemplate), id: crypto.randomUUID(), team, cell: cell.index, currentHealth: healthFor(pendingTemplate), actionsUsed: 0, initiative: 0 };
+      const deployed = { ...structuredClone(pendingTemplate), id: crypto.randomUUID(), team, cell: cell.index, currentHealth: healthFor(pendingTemplate), currentEnergy: energyFor(pendingTemplate), actionsUsed: 0, initiative: 0 };
       units.push(deployed);
       logActivity(`${deployed.name} deployed for Team ${team}.`);
       pendingTemplate = null;
@@ -495,6 +538,14 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
   byId("next-turn").addEventListener("click", () => {
     if (!initiative.length) return;
+    const ending = units.find((unit) => unit.id === initiative[turnIndex]);
+    if (ending) {
+      const recovered = Math.min(energyFor(ending) - ending.currentEnergy, 1 + perkRanks(ending, "Recuperation") * 2);
+      if (recovered > 0) {
+        ending.currentEnergy += recovered;
+        logActivity(`${ending.name} recuperates ${recovered} energy.`);
+      }
+    }
     turnIndex += 1;
     if (turnIndex >= initiative.length) {
       turnIndex = 0;
@@ -513,12 +564,16 @@ import SiteFooter from "../components/SiteFooter.astro";
     const advantage = byId<HTMLInputElement>("roll-advantage").checked;
     const kept = advantage ? dice.sort((a, b) => b - a).slice(0, 2) : dice.slice(0, 2);
     const bonus = Number(byId<HTMLInputElement>("roll-bonus").value) || 0;
-    const total = kept[0] + kept[1] + bonus;
-    byId("dice-result").innerHTML = `<strong>${total}</strong><span>${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${advantage ? " (advantage)" : ""}</span>`;
+    const energyBoost = pendingEnergyBoost;
+    const energyDamage = pendingEnergyDamage;
+    const total = kept[0] + kept[1] + bonus + energyBoost;
+    byId("dice-result").innerHTML = `<strong>${total}</strong><span>${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${energyBoost ? ` + ${energyBoost} energy` : ""}${advantage ? " (advantage)" : ""}${energyDamage ? ` · +${energyDamage} magical damage on success` : ""}</span>`;
     const entry = document.createElement("li");
-    entry.textContent = `${total}: ${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}`;
+    entry.textContent = `${total}: ${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${energyBoost ? ` + ${energyBoost} energy` : ""}${energyDamage ? `; +${energyDamage} magical damage on success` : ""}`;
     byId("roll-log").prepend(entry);
-    logActivity(`Rolled ${total}${bonus ? ` with +${bonus}` : ""}.`);
+    logActivity(`Rolled ${total}${energyBoost ? ` with +${energyBoost} from energy` : ""}${energyDamage ? `; ${energyDamage} magical damage prepared` : ""}.`);
+    pendingEnergyBoost = 0;
+    pendingEnergyDamage = 0;
   });
 
   byId("save-battle").addEventListener("click", () => {
@@ -572,7 +627,8 @@ import SiteFooter from "../components/SiteFooter.astro";
     const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
     if (saved) {
       saved.cells?.forEach((cell: Cell, index: number) => Object.assign(cells[index], cell));
-      units = saved.units || []; initiative = saved.initiative || []; turnIndex = saved.turnIndex || 0; round = saved.round || 1;
+      units = (saved.units || []).map((unit: Unit) => ({ ...unit, currentEnergy: unit.currentEnergy ?? energyFor(unit) }));
+      initiative = saved.initiative || []; turnIndex = saved.turnIndex || 0; round = saved.round || 1;
     }
   } catch {}
   renderAll();
