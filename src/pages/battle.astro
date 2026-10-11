@@ -131,6 +131,69 @@ import SiteFooter from "../components/SiteFooter.astro";
   const healthFor = (unit: CharacterTemplate) => Math.ceil(unit.level / 2) + unit.healthPerks * 3;
   const actionsFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Action")?.ranks || 0);
   const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
+  const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.color}`;
+  const cellNeighbors = (index: number) => {
+    const row = Math.floor(index / 12);
+    const col = index % 12;
+    const deltas = row % 2 === 0
+      ? [[0, -1], [0, 1], [-1, -1], [-1, 0], [1, -1], [1, 0]]
+      : [[0, -1], [0, 1], [-1, 0], [-1, 1], [1, 0], [1, 1]];
+    return deltas
+      .map(([dr, dc]) => [row + dr, col + dc])
+      .filter(([nextRow, nextCol]) => nextRow >= 0 && nextRow < 8 && nextCol >= 0 && nextCol < 12)
+      .map(([nextRow, nextCol]) => nextRow * 12 + nextCol);
+  };
+  const connectedZone = (start: number) => {
+    const key = zoneKey(cells[start]);
+    const visited = new Set<number>([start]);
+    const queue = [start];
+    while (queue.length) {
+      const current = queue.shift()!;
+      cellNeighbors(current).forEach((neighbor) => {
+        if (!visited.has(neighbor) && zoneKey(cells[neighbor]) === key) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+        }
+      });
+    }
+    return visited;
+  };
+  const zoneDistance = (from: number, to: number) => {
+    if (from === to) return 0;
+    const startZone = connectedZone(from);
+    if (startZone.has(to)) return 0;
+    const zoneIds = new Map<number, string>();
+    cells.forEach((_, index) => {
+      if (zoneIds.has(index)) return;
+      const members = connectedZone(index);
+      const id = `${Math.min(...members)}`;
+      members.forEach((member) => zoneIds.set(member, id));
+    });
+    const startId = zoneIds.get(from)!;
+    const targetId = zoneIds.get(to)!;
+    const graph = new Map<string, Set<string>>();
+    cells.forEach((_, index) => {
+      const source = zoneIds.get(index)!;
+      if (!graph.has(source)) graph.set(source, new Set());
+      cellNeighbors(index).forEach((neighbor) => {
+        const destination = zoneIds.get(neighbor)!;
+        if (source !== destination) graph.get(source)!.add(destination);
+      });
+    });
+    const queue: [string, number][] = [[startId, 0]];
+    const visited = new Set([startId]);
+    while (queue.length) {
+      const [current, distance] = queue.shift()!;
+      if (current === targetId) return distance;
+      graph.get(current)?.forEach((neighbor) => {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push([neighbor, distance + 1]);
+        }
+      });
+    }
+    return Number.POSITIVE_INFINITY;
+  };
   const perkRules: Record<string, string> = {
     Energy: "Gain +3 maximum energy per rank.",
     Recuperation: "Recover +2 additional energy at the end of each turn.",
@@ -167,7 +230,9 @@ import SiteFooter from "../components/SiteFooter.astro";
     const renderedCells = cells.map((cell) => {
       const unit = units.find((candidate) => candidate.cell === cell.index);
       const style = cell.color ? `--zone:${cell.color}` : "";
-      const reachable = mode === "play" && selectedUnitId && !unit && movesRemaining > 0;
+      const activeUnit = units.find((candidate) => candidate.id === selectedUnitId);
+      const distance = activeUnit ? zoneDistance(activeUnit.cell, cell.index) : Number.POSITIVE_INFINITY;
+      const reachable = mode === "play" && selectedUnitId && !unit && distance <= movesRemaining;
       return `<button type="button" class="hex${cell.zone ? " painted" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.zone || "Unpainted hex"}">
         <span class="zone-label">${cell.zone}</span>
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
@@ -298,12 +363,15 @@ import SiteFooter from "../components/SiteFooter.astro";
       movesRemaining = movementFor(occupying);
     } else if (mode === "play" && selectedUnitId) {
       const unit = units.find((candidate) => candidate.id === selectedUnitId);
-      if (unit && movesRemaining > 0) {
+      const distance = unit ? zoneDistance(unit.cell, cell.index) : Number.POSITIVE_INFINITY;
+      if (unit && distance <= movesRemaining) {
+        const origin = cells[unit.cell].zone || "unmarked zone";
         unit.cell = cell.index;
-        movesRemaining -= 1;
-        logActivity(`${unit.name} moves to ${cell.zone || `hex ${cell.index + 1}`}.`);
+        movesRemaining -= distance;
+        const destination = cell.zone || "unmarked zone";
+        logActivity(distance === 0 ? `${unit.name} repositions within ${destination}.` : `${unit.name} moves ${distance} zone${distance === 1 ? "" : "s"} from ${origin} to ${destination}.`);
       } else if (unit) {
-        byId("battle-status").textContent = `${unit.name} has no movement remaining.`;
+        byId("battle-status").textContent = `${unit.name} cannot reach that zone with ${movesRemaining} movement remaining.`;
       }
     }
     renderAll();
@@ -390,7 +458,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     mode = button.dataset.mode as Mode;
     document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
     byId("deployment-panel").classList.toggle("disabled-panel", mode === "paint");
-    byId("battle-status").textContent = mode === "paint" ? "Left-drag paints terrain; right-drag erases it." : mode === "deploy" ? "Left-click places or selects units; right-click removes them." : "Select a unit, then move it one hex at a time up to its movement allowance.";
+    byId("battle-status").textContent = mode === "paint" ? "Left-drag paints terrain; right-drag erases it. Connected matching hexes form one zone." : mode === "deploy" ? "Left-click places or selects units; right-click removes them." : "Select a unit, then click any hex in a reachable zone. Repositioning within the same zone is free.";
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-team]").forEach((button) => button.addEventListener("click", () => {
     team = button.dataset.team as Team;
