@@ -1,61 +1,53 @@
 ---
 title: Quick Reference
 description: The essential procedures, outcomes, and table reminders on a single page.
-order: 7
+order: 8
 icon: "☰"
 eyebrow: Table Reference
 updated: 2026-10-10
 ---
 
-## Core roll
+## Checks
 
-Roll a number of d6 equal to the chosen approach and keep the highest.
+**2d6 + all relevant skill points vs the Animator's target.** Meet or exceed the target to succeed.
 
-| Result | Outcome |
-| --- | --- |
-| **6** | Triumph — achieve your aim. |
-| **4–5** | Success with a cost. |
-| **1–3** | Setback — the situation worsens. |
-| **Two 6s** | Critical — gain an added benefit. |
+## Contests
 
-**Edge:** +1 die. **Peril:** −1 die. Maximum net adjustment: ±2 dice.
+Both sides roll **2d6 + relevant skills and bonuses**. Highest result wins. Ties go to the attacker; if there is no attacker, a tie remains a tie.
 
-## Approaches
+## Character baseline
 
-| Approach | Use it to… |
-| --- | --- |
-| **Force** | Endure, break, threaten, overpower |
-| **Finesse** | Move, aim, hide, act precisely |
-| **Insight** | Study, recall, sense, unravel |
-| **Presence** | Inspire, deceive, negotiate, command |
+- Health: 1
+- Energy: 0
+- Actions per turn: 1
+- Movements per turn: 1
+- Movement distance: 1 adjacent zone
+- Skill points: equal to level
+- Perks: one at each even-numbered level
+- Skill cap: 2, increasing by 1 at levels 10, 20, and so on
 
-## Position and effect
+## Combat skills
 
-- **Controlled:** Limited danger.
-- **Risky:** Meaningful danger; the default.
-- **Desperate:** Severe danger, often with greater opportunity.
-- **Limited / Standard / Great effect:** Mark 1 / 2 / 3 progress segments.
+Assign every skill to offence, defence, or tactical use. Each skill can be used once per round.
 
-## Spend Momentum
+## Energy
 
-- Add a die after rolling, before resolution.
-- Establish a useful, plausible detail.
-- Help without sharing the immediate consequence.
+Spend before rolling for **+1 to the roll**, or spend to deal **+1 magical damage**. With the Energy perk, recuperate 1 at the end of your turn.
 
-## Combat exchange
+## Health
 
-State intent → choose approach → establish position and effect → roll → resolve action and response.
+At 0 health, fall unconscious. Healing can revive you in combat; allies can revive you after combat. Taking damage while unconscious causes death.
 
-## Harm and resistance
+## Zones
 
-- **Minor:** Peril when directly relevant.
-- **Severe:** Broad peril; some actions impossible.
-- **Critical:** Out of action; immediate aid required.
-- **Resist:** Mark 1–3 strain to reduce or redirect a consequence.
-- **5 strain:** Become overwhelmed, leave the scene or accept a scar, then clear strain.
+Move to one adjacent zone per movement. Speed increases movement distance. Dash adds movements. Range extends attack distance. Multitarget adds targets within a zone.
 
-## Expedition turn
+## Common stacking perks
 
-Choose route → assign roles → face danger → mark time and supply → discover or encounter.
-
-> **Guide reminders:** Describe danger before the roll. Make consequences change the situation. Ask questions and use the answers. Fill the world with beauty worth risking something for.
+- Health: +3 health
+- Energy: +3 max energy
+- Action: +1 action
+- Speed: +1 movement distance
+- Dash: +1 movement
+- Physical / Magic Damage: +1 relevant damage
+- Resistance: reduce damage by 1 each turn

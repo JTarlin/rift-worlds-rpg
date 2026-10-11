@@ -15,6 +15,7 @@ export const ruleNavigation = [
   { id: "gameplay", title: "Gameplay" },
   { id: "combat", title: "Combat" },
   { id: "exploration", title: "Exploration" },
-  { id: "equipment", title: "Equipment" },
+  { id: "equipment", title: "Perks" },
+  { id: "example-characters", title: "Example Characters" },
   { id: "quick-reference", title: "Quick Reference" },
 ] as const;

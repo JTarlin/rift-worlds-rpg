@@ -1,48 +1,48 @@
 ---
 title: Combat
-description: Run dangerous conflicts where intent and changing position matter more than counting squares.
+description: Use actions, zones, skill categories, and opposed rolls to resolve combat.
 order: 4
 icon: "⚔"
 eyebrow: Chapter Four
 updated: 2026-10-10
 ---
 
-## When blades are drawn
+## Turns and actions
 
-Combat uses the same rules as every other risky scene. There is no separate initiative roll. The Guide focuses attention where the danger is sharpest, then moves between characters as the fiction demands.
+A character can act once per turn by default. Each rank of the Action perk grants one additional action. Actions are used to attack and perform other significant combat tasks.
 
-## A combat exchange
+A character can also move once per turn. Movement allows them to enter an adjacent zone; movement speed and the Dash perk can extend this.
 
-1. State your intent.
-2. Describe your action and choose an approach.
-3. Establish position and effect.
-4. Roll and resolve both your action and the enemy's response.
+## Using skills in combat
 
-Enemies rarely roll. Their threat appears through position, consequences, and actions that demand an answer.
+Every skill point is assigned to an **offence**, **defence**, or **tactical** skill. Each individual skill can be used once per round.
 
-## Harm
+A character with Swordsmanship, Dancing II, and Charm II could:
 
-| Level | Examples | Effect |
-| --- | --- | --- |
-| **Minor** | Winded, grazed, shaken | Peril when the injury directly interferes. |
-| **Severe** | Broken arm, deep wound, terrified | Peril broadly; some actions become impossible. |
-| **Critical** | Dying, crushed, lost to the veil | You are out of action and need immediate aid. |
+- Attack once using Swordsmanship.
+- Make one tactical roll using Charm.
+- Use Dancing when attacked to improve a defence roll.
 
-If all boxes at a level are filled, further harm rises to the next level.
+This character fights by jabbing with a sword while evading and misdirecting enemies through fancy footwork and guile.
 
-## Defending yourself
+## Attacks and defence
 
-When a consequence would harm you, you may **resist**. Describe how you endure or avoid the worst of it, then mark strain equal to the consequence's severity: 1 for minor, 2 for severe, 3 for critical. Resistance always reduces or redirects the consequence.
+An attack is a contest. The attacker rolls 2d6 and adds relevant offensive skills. The defender rolls 2d6 and adds relevant defensive skills. The higher total wins, and a tie goes to the attacker.
 
-At 5 strain, you become **overwhelmed**. You leave the immediate scene, lose control, or accept a lasting scar before clearing all strain.
+The attack's damage comes from the weapon, effect, or ability used, plus applicable perk bonuses. Subtract damage resistance, then reduce health by the remaining damage.
 
-## Distance
+## Unconsciousness and death
 
-- **Engaged:** Close enough to touch or strike.
-- **Near:** A quick move away.
-- **Far:** Requires sustained movement or a ranged weapon.
-- **Distant:** Beyond ordinary engagement without special positioning.
+At zero health, a character falls unconscious. Healing can revive them during combat, and friendly characters can revive them after combat.
 
-## Ending a fight
+If an unconscious character takes further damage from a hazard or enemy, they die.
 
-Most foes are overcome by filling a progress track, exploiting a decisive vulnerability, or changing their reason to fight. Defeat does not always mean death. Surrender, flight, capture, and transformation are often more interesting.
+## Energy in combat
+
+Before rolling, spend 1 energy for **+1 to the roll**. You may instead spend energy to deal **+1 magical damage** on an attack. Perks can improve these uses or unlock new ways to spend energy.
+
+Characters with an energy maximum recuperate 1 energy at the end of their turn unless another perk changes that amount.
+
+## Zones and targets
+
+Characters occupy distinct zones. Most movement reaches an adjacent zone. The Range perk allows attacks to target additional zones away, while Multitarget allows an attack to affect additional characters in one zone.

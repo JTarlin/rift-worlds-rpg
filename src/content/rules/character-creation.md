@@ -1,54 +1,57 @@
 ---
 title: Character Creation
-description: Build a capable wanderer whose history, talents, and burdens matter at the table.
+description: Create a character by assigning level-based skill points and selecting perks.
 order: 2
 icon: "✦"
 eyebrow: Chapter Two
 updated: 2026-10-10
 ---
 
-## Create your wanderer
+## Choose a level
 
-A wanderer is someone willing—or forced—to cross the rifts. Build yours by making a few vivid choices. Leave some answers open; play will reveal who they become.
+Your level determines your total skill points and perks:
 
-## 1. Choose a calling
+- You have skill points equal to your level.
+- You gain one perk at every even-numbered level.
+- Your base health is 1.
+- Your base energy is 0.
+- You have 1 action and 1 movement per turn.
 
-| Calling | You are known for | Starting talent |
-| --- | --- | --- |
-| **Vanguard** | Courage under pressure | Hold the Line |
-| **Seeker** | Curiosity and fieldcraft | Always a Way |
-| **Speaker** | Reading people and shaping events | Well Connected |
-| **Tinker** | Devices, repairs, and dangerous ideas | Improvised Solution |
-| **Veilborn** | An uncanny bond with the rifts | Hear the Between |
+| Level | Skill points | Perks | Skill cap |
+| --- | ---: | ---: | ---: |
+| 1 | 1 | 0 | 2 |
+| 5 | 5 | 2 | 2 |
+| 10 | 10 | 5 | 3 |
+| 20 | 20 | 10 | 4 |
 
-Each calling will eventually offer a dedicated set of talents. For now, write one sentence describing how you learned your trade.
+## Create your skills
 
-## 2. Assign approaches
+Assign your skill points among base skills and any advanced skills that describe the character. A skill's rating cannot exceed the skill cap for your level.
 
-Assign **3, 2, 2, 1** among Force, Finesse, Insight, and Presence. Your highest approach is your instinct. Your lowest is not incompetence—it is where action becomes most interesting.
+The base skills are:
 
-## 3. Define your touchstones
+- **Strength** (offence)
+- **Agility** (defence)
+- **Toughness** (defence)
+- **Intellect** (tactical)
+- **Charisma** (tactical)
 
-- **Origin:** What kind of world raised you?
-- **Drive:** What keeps pulling you through the rifts?
-- **Bond:** Who in the company matters most to you, and why?
-- **Burden:** What do you carry that you cannot simply discard?
+Advanced skills can be practiced talents, professions, or magical abilities. Examples include Swordmastery, Exploration, Stealth, Fire Magic, and Speed.
 
-## 4. Choose talents
+## Categorize combat skills
 
-Choose two talents:
+Whenever you gain a skill point, assign that skill to **offence**, **defence**, or **tactical** use. You may use each skill once per combat round.
 
-- **Always Prepared:** Once per expedition, produce a common item you plausibly packed.
-- **Clear Eyes:** Gain edge when you pause to study a dangerous situation.
-- **Hard to Kill:** The first time you would mark a second severe harm, mark a minor harm instead.
-- **Rift-Touched:** Ask the Guide one question when you first enter a new world; the rift answers in an image or sensation.
-- **Steady Hands:** Ignore peril caused solely by haste or unstable footing.
-- **True Companion:** When you put yourself at risk for your bond, gain 1 Momentum after the action resolves.
+## Select perks
 
-## 5. Take your kit
+Choose one perk for every even-numbered level. You can select the same perk multiple times; its benefits stack. See the complete [perk list](../equipment).
 
-Choose a travel kit, a weapon or defensive tool, two utility items, and one keepsake. See [Equipment](../equipment) for examples.
+## Example: level 7 ninja
 
-## Final questions
+- Stealth II
+- Agility II
+- Infiltration
+- Assassination
+- Archery
 
-> What do we notice first, and what do you hope we never discover?
+To stealthily climb a castle tower and enter a daimyo's chambers unseen, the ninja uses Stealth, Agility, and Infiltration: **2d6 + 2 + 2 + 1** against the Animator's target.

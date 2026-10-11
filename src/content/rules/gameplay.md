@@ -1,57 +1,41 @@
 ---
 title: Gameplay
-description: Frame scenes, resolve uncertain actions, and turn consequences into an unfolding story.
+description: Resolve checks and opposed contests with the core 2d6 skill system.
 order: 3
 icon: "△"
 eyebrow: Chapter Three
 updated: 2026-10-10
 ---
 
-## The rhythm of play
+## Making checks
 
-Most sessions move through a repeating rhythm:
+Whenever your character attempts something non-trivial that would result in consequences for failure, make a skill check:
 
-1. **Establish the scene.** Where are you? What is changing? What demands attention?
-2. **Ask what you do.** Players describe actions and intentions.
-3. **Resolve uncertainty.** If failure would matter, make the core roll.
-4. **Change the situation.** Apply the result, reveal new information, and move forward.
+1. Roll two six-sided dice.
+2. Add the points from all skills relevant to the situation.
+3. Compare the result with a target set by the Animator.
+4. If your result meets or exceeds the target, you succeed.
 
-## Position and effect
+### Combining skills
 
-Before a roll, the Guide states the likely danger and how much the action can accomplish.
+Several skills can contribute to one roll. A character with Agility, Jumping, and Speed could use all three to cross a jungle ravine: **2d6 + 1 + 1 + 1** against the Animator's target.
 
-**Position** describes the danger:
+The same applies when thwarting danger. A character with Armour and Instincts II might roll **2d6 + 1 + 2** to evade bullets whizzing overhead.
 
-- **Controlled:** You have time or leverage. A setback is limited.
-- **Risky:** The default. Success and danger are both plausible.
-- **Desperate:** The danger is immediate and severe, but bold action may earn greater effect.
+### When a skill does not apply
 
-**Effect** describes impact:
+The fiction determines whether a skill is relevant. Wizardry III cannot help inside an anti-magic zone. Less obvious cases are a table ruling: Gun-fu might still represent enough martial arts training to fight without a gun.
 
-- **Limited:** Partial progress or a temporary result.
-- **Standard:** You accomplish the stated intent.
-- **Great:** You achieve more, affect a wider area, or create a lasting advantage.
+## Contests
 
-Players may trade position for effect when the fiction allows: accept greater danger to accomplish more.
+A contest occurs when your character is directly opposed by something in the world, such as an enemy warrior in battle or a hostile virus in a system.
 
-## Working together
+Both sides roll **2d6**, adding all relevant skills and bonuses. The higher result wins.
 
-When you **assist**, describe how you help and give the acting character edge. If the roll brings a consequence connected to your help, you share exposure to it.
+> **Ties:** The attacker wins a tied contest. If there is no true attacker, such as during an arm wrestle, the tie remains a tie.
 
-When the whole group acts toward one objective, choose a leader. Everyone rolls; use the single best result, but each setback adds one strain to the leader.
+## Advantage
 
-## Progress tracks
+Some perks grant advantage to particular checks or contests. When you have advantage, roll an additional d6 and keep the best two dice before adding bonuses.
 
-Use a progress track for challenges that require sustained effort. A track has 4, 6, or 8 segments.
-
-| Effect | Segments |
-| --- | --- |
-| Limited | 1 |
-| Standard | 2 |
-| Great | 3 |
-
-Tracks show progress, not elapsed time. A new obstacle may appear even as the company moves closer to its goal.
-
-## Recovery and respite
-
-During a safe respite, each character may take two actions: treat harm, repair gear, pursue a project, gather information, or deepen a bond. After respite, the Guide advances one unresolved threat.
+The source rules explicitly grant advantage through the Evasive perk; the Animator determines when other effects provide it.

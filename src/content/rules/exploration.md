@@ -1,57 +1,39 @@
 ---
 title: Exploration
-description: Cross unstable frontiers, manage expedition pressure, and discover what each world conceals.
+description: Apply the general skill system to travel, investigation, stealth, and environmental hazards.
 order: 5
 icon: "⌖"
 eyebrow: Chapter Five
 updated: 2026-10-10
 ---
 
-## Entering a new world
+## Exploration uses skills
 
-Every world beyond a rift has a defining **wonder**, **hazard**, and **hunger**. The Guide introduces at least one immediately and lets the others emerge through play.
+Rift Worlds 13 does not define a separate exploration subsystem. Travel, investigation, infiltration, survival, and environmental dangers all use ordinary checks and contests.
 
-When the company arrives, ask:
+Characters are encouraged to invent advanced skills for the worlds they explore. Examples include:
 
-- What here is breathtaking?
-- What familiar rule no longer applies?
-- What sign suggests someone came before?
+- Exploration
+- Navigation
+- Survival
+- Climbing
+- Stealth
+- Infiltration
+- Senses
+- Flight
+- Nature Magic
+- Old Language
 
-## The expedition turn
+## Resolving hazards
 
-1. Choose a route and destination.
-2. Assign expedition roles.
-3. Resolve the route's primary danger.
-4. Mark time and update supplies.
-5. Encounter a discovery, omen, or threat.
+When an obstacle has consequences for failure, the Animator sets a target. The player rolls 2d6 and adds every skill that genuinely helps.
 
-## Expedition roles
+For example, crossing a jungle ravine could use Agility, Jumping, and Speed together. Scaling a guarded tower unseen might use Stealth, Agility, and Infiltration.
 
-- **Pathfinder:** Chooses the route and overcomes terrain.
-- **Watcher:** Notices ambushes, changes, and hidden signs.
-- **Quartermaster:** Tracks supplies and protects essential gear.
-- **Chronicler:** Records discoveries and interprets strange phenomena.
+## Opposed exploration
 
-One character can hold more than one role, but gains peril for each role beyond the first when pressure mounts.
+Use a contest when another creature or force actively opposes the character. Sneaking past a sentry could pit Stealth and Agility against the sentry's Senses. Overcoming a hostile computer virus could use technical skills against the virus's own bonuses.
 
-## Supply
+## Rest
 
-Supply is a shared track from 0 to 6. Begin a prepared expedition at 6. Spend 1 Supply when the company needs food, light, shelter, ammunition, or routine tools in hostile territory.
-
-At 0 Supply, each need becomes an immediate problem. Characters can forage, salvage, bargain, or turn back.
-
-## Discovery
-
-When you investigate a place, ask a focused question and roll Insight. On a success, the Guide answers honestly and gives you something useful. On a success with a cost, the answer also exposes danger or demands action.
-
-Good questions include:
-
-- What happened here?
-- What is this place hiding?
-- What can hurt us?
-- What is valuable or useful?
-- How can we safely move forward?
-
-## Camp
-
-Making camp in dangerous territory costs 1 Supply. If the site is defensible, each character clears 1 strain and the company may perform one respite action. If it is exposed, the Guide introduces a threat before rest is complete.
+A prolonged period of rest can restore energy. The document does not yet specify an exact duration or additional travel-resource procedures; the Animator sets those details for the current world and situation.

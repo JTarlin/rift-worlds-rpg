@@ -1,54 +1,42 @@
 ---
 title: Core Concepts
-description: The dice, risks, and principles at the heart of every Rift Worlds session.
+description: The essential character attributes and dice rules that power Rift Worlds 13.
 order: 1
 icon: "◇"
 eyebrow: Chapter One
 updated: 2026-10-10
 ---
 
-## The conversation
+## What is Rift Worlds 13?
 
-Rift Worlds is a conversation about remarkable people entering places that should not exist. The **Guide** describes the world and portrays its inhabitants. The other players describe their **wanderers**: what they attempt, what they fear, and what they refuse to leave behind.
-
-When the outcome is obvious, it happens. When the outcome is uncertain and meaningful, make a roll.
-
-> **The guiding principle:** Follow the fiction. Establish what is happening first, then use the rules to discover what happens next.
+Rift Worlds 13 is a role-playing game. Create characters and resolve problems by rolling dice. The **Animator** presents the world, its inhabitants, and the consequences of the characters' choices.
 
 ## The core roll
 
-When you attempt something risky, gather a number of six-sided dice equal to the relevant **approach**, then add or remove dice for helpful and hindering circumstances. Roll the pool and keep the highest die.
+When your character attempts something non-trivial with consequences for failure, roll **2d6** and add the points from every relevant skill. Compare the total with the Animator's target.
 
-| Highest die | Result | What it means |
-| --- | --- | --- |
-| **6** | Triumph | You achieve your aim cleanly. |
-| **4–5** | Success with a cost | You do it, but face danger, sacrifice, or reduced effect. |
-| **1–3** | Setback | The situation worsens; the Guide makes a consequence. |
-| **Two or more 6s** | Critical | You exceed expectations and gain an added benefit. |
+> **Success:** If your total meets or exceeds the target, your character succeeds.
 
-If your pool would contain no dice, roll two dice and keep the lower result.
+## Character attributes
 
-## Approaches
+Characters have **skill points** and **perks**. Skill points add bonuses to dice rolls made to resolve situations. Perks provide additional benefits such as health, damage, energy, actions, and movement.
 
-- **Force** — endure, break, threaten, or overpower.
-- **Finesse** — move, aim, hide, or act with precision.
-- **Insight** — study, recall, sense, or unravel.
-- **Presence** — inspire, deceive, negotiate, or command.
+### Health
 
-## Edge and peril
+All characters start with **1 health**, then gain more through perks. If health drops to zero, the character falls unconscious. Friendly characters can revive them out of combat, and healing can revive them during combat.
 
-Gain **edge** when preparation, assistance, or a strong position favors you; add one die. Suffer **peril** when injury, pressure, or poor positioning works against you; remove one die. A roll can gain at most two net dice or lose at most two.
+Hazards and enemies can damage an unconscious character again. If they do, the character dies.
 
-## Momentum
+### Energy
 
-The group begins each expedition with **2 Momentum**. Gain Momentum when a setback reveals something important or when a character accepts a serious complication. Spend 1 Momentum to:
+Characters start with **0 energy** and gain it through perks or prolonged rest. Any character can spend energy before rolling to gain **+1 to a dice roll**, or spend it to deal **+1 magical damage** on an attack.
 
-1. Add one die after seeing a roll, before resolving it.
-2. Establish a useful detail that follows from what the group already knows.
-3. Help an ally without exposing yourself to the same immediate consequence.
+Some perks allow energy to restore health, block damage, or gain actions.
 
-Momentum belongs to the whole group. The table decides when to spend it.
+### Actions
 
-## Consequences
+Characters have **1 action** by default. Actions determine how often a character can act in combat. A character with three actions can act three times on their turn.
 
-Consequences make the world respond. Common consequences include harm, lost time, diminished position, depleted gear, unwanted attention, or a difficult choice. A consequence should change the situation rather than simply stop play.
+### Movement
+
+The play area is divided into distinct **zones**. Each character gets one movement per turn, allowing them to enter an adjacent zone. Perks may increase movement speed or grant additional movements. Other effects can restrict or force movement.
