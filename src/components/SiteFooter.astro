@@ -1,0 +1,14 @@
+---
+import { site } from "../data/site";
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="shell footer-inner">
+    <div>
+      <strong>{site.title}</strong>
+      <p>{site.tagline}</p>
+    </div>
+    <p>Rules edition 0.1 · © {year} Rift Worlds</p>
+  </div>
+</footer>

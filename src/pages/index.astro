@@ -1,0 +1,75 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import RuleCard from "../components/RuleCard.astro";
+import { href } from "../data/site";
+
+const rules = (await getCollection("rules", ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout>
+  <SiteHeader />
+  <main id="main-content">
+    <section class="hero">
+      <div class="rift-glow" aria-hidden="true"></div>
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">A tabletop roleplaying game</p>
+          <h1>Every world is<br />a <em>doorway.</em></h1>
+          <p class="hero-lede">
+            Step through the rifts. Brave impossible frontiers. Decide what you will risk to change the fate of worlds.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href={href("/rules/core-concepts")}>Start playing</a>
+            <a class="button secondary" href={href("/rules")}>Explore the rules</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="rift"><span></span><span></span><span></span></div>
+          <p>Beyond the veil,<br /><strong>worlds await.</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="principles shell" aria-labelledby="principles-heading">
+      <div>
+        <p class="eyebrow">The promise of play</p>
+        <h2 id="principles-heading">Wonder has a cost.</h2>
+      </div>
+      <div class="principle-grid">
+        <article><span>01</span><h3>Bold choices</h3><p>The story moves when characters take risks. The dice answer what those choices cost.</p></article>
+        <article><span>02</span><h3>Strange worlds</h3><p>Each rift opens onto a place with its own wonders, dangers, and truths worth discovering.</p></article>
+        <article><span>03</span><h3>Shared discovery</h3><p>Players and Guide build the setting together, following questions wherever they lead.</p></article>
+      </div>
+    </section>
+
+    <section class="rules-section">
+      <div class="shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">The field guide</p><h2>Learn the rules</h2></div>
+          <p>Everything you need to create wanderers, cross the rifts, and face what waits beyond.</p>
+        </div>
+        <div class="rules-grid">
+          {rules.map((rule, index) => (
+            <RuleCard href={href(`/rules/${rule.id}`)} title={rule.data.title} description={rule.data.description} icon={rule.data.icon} index={index + 1} />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="callout shell">
+      <div>
+        <p class="eyebrow">At the table</p>
+        <h2>Need the essentials?</h2>
+        <p>Keep the core roll, common actions, conditions, and turn sequence close at hand.</p>
+      </div>
+      <a class="button primary" href={href("/rules/quick-reference")}>Open quick reference</a>
+    </section>
+  </main>
+  <SiteFooter />
+</BaseLayout>

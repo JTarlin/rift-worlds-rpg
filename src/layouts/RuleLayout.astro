@@ -1,0 +1,45 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import RulesSidebar from "../components/RulesSidebar.astro";
+import { href, ruleNavigation } from "../data/site";
+
+interface Props {
+  title: string;
+  description: string;
+  eyebrow: string;
+  icon: string;
+  id: string;
+}
+
+const { title, description, eyebrow, icon, id } = Astro.props;
+const currentIndex = ruleNavigation.findIndex((item) => item.id === id);
+const previous = currentIndex > 0 ? ruleNavigation[currentIndex - 1] : undefined;
+const next = currentIndex < ruleNavigation.length - 1 ? ruleNavigation[currentIndex + 1] : undefined;
+---
+
+<BaseLayout title={title} description={description}>
+  <SiteHeader />
+  <main id="main-content" class="shell rules-layout">
+    <RulesSidebar current={id} />
+    <article class="rule-article">
+      <header class="chapter-header">
+        <span class="chapter-icon" aria-hidden="true">{icon}</span>
+        <div>
+          <p class="eyebrow">{eyebrow}</p>
+          <h1>{title}</h1>
+          <p class="lede">{description}</p>
+        </div>
+      </header>
+      <div class="prose">
+        <slot />
+      </div>
+      <nav class="chapter-nav" aria-label="Chapter navigation">
+        {previous ? <a href={href(`/rules/${previous.id}`)}><span>Previous</span>{previous.title}</a> : <span />}
+        {next ? <a class="next" href={href(`/rules/${next.id}`)}><span>Next</span>{next.title}</a> : <span />}
+      </nav>
+    </article>
+  </main>
+  <SiteFooter />
+</BaseLayout>

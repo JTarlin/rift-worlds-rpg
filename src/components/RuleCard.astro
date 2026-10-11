@@ -1,0 +1,21 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  icon: string;
+  index: number;
+}
+
+const { href, title, description, icon, index } = Astro.props;
+---
+
+<a class="rule-card" href={href}>
+  <div class="rule-card-top">
+    <span class="rule-icon" aria-hidden="true">{icon}</span>
+    <span class="rule-number">{String(index).padStart(2, "0")}</span>
+  </div>
+  <h3>{title}</h3>
+  <p>{description}</p>
+  <span class="text-link">Read chapter <span aria-hidden="true">→</span></span>
+</a>

@@ -1,0 +1,27 @@
+---
+import { href, ruleNavigation, site } from "../data/site";
+---
+
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="brand" href={href("/")} aria-label={`${site.title} home`}>
+      <span class="brand-mark" aria-hidden="true"><span>R</span></span>
+      <span>
+        <strong>{site.title}</strong>
+        <small>Tabletop Roleplaying Game</small>
+      </span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href={href("/rules")}>Rules</a>
+      <a href={href("/rules/quick-reference")}>Quick Reference</a>
+      <details class="rules-menu">
+        <summary>Browse</summary>
+        <div class="menu-panel">
+          {ruleNavigation.map((item) => (
+            <a href={href(`/rules/${item.id}`)}>{item.title}</a>
+          ))}
+        </div>
+      </details>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,23 @@
+---
+import { href, ruleNavigation } from "../data/site";
+
+interface Props {
+  current?: string;
+}
+
+const { current } = Astro.props;
+---
+
+<aside class="rules-sidebar" aria-label="Rules chapters">
+  <a class:list={["sidebar-overview", { active: !current }]} href={href("/rules")}>Rules overview</a>
+  <ol>
+    {ruleNavigation.map((item, index) => (
+      <li>
+        <a class:list={{ active: current === item.id }} href={href(`/rules/${item.id}`)} aria-current={current === item.id ? "page" : undefined}>
+          <span>{String(index + 1).padStart(2, "0")}</span>
+          {item.title}
+        </a>
+      </li>
+    ))}
+  </ol>
+</aside>

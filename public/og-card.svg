@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0b1014"/>
+  <circle cx="950" cy="315" r="240" fill="#152c24"/>
+  <ellipse cx="950" cy="315" rx="90" ry="220" fill="none" stroke="#90e2bd" stroke-width="5"/>
+  <path d="M950 105V525" stroke="#c4ffe2" stroke-width="3"/>
+  <text x="100" y="260" fill="#90e2bd" font-family="Georgia,serif" font-size="34" letter-spacing="8">TABLETOP ROLEPLAYING GAME</text>
+  <text x="100" y="365" fill="#e8e3d7" font-family="Georgia,serif" font-size="92">RIFT WORLDS</text>
+  <text x="104" y="430" fill="#a8aaa5" font-family="Arial,sans-serif" font-size="28">Adventure between broken worlds.</text>
+</svg>

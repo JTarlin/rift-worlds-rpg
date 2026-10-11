@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import RulesSidebar from "../../components/RulesSidebar.astro";
+import RuleCard from "../../components/RuleCard.astro";
+import { href } from "../../data/site";
+
+const rules = (await getCollection("rules", ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title="Rules" description="The complete rules guide for Rift Worlds RPG.">
+  <SiteHeader />
+  <main id="main-content" class="shell rules-layout">
+    <RulesSidebar />
+    <div class="rules-index">
+      <header class="index-header">
+        <p class="eyebrow">Rift Worlds field guide</p>
+        <h1>Rules of the rift</h1>
+        <p class="lede">Read from the beginning if you are new, or jump directly to the chapter you need at the table.</p>
+      </header>
+      <div class="rules-grid compact">
+        {rules.map((rule, index) => (
+          <RuleCard href={href(`/rules/${rule.id}`)} title={rule.data.title} description={rule.data.description} icon={rule.data.icon} index={index + 1} />
+        ))}
+      </div>
+    </div>
+  </main>
+  <SiteFooter />
+</BaseLayout>

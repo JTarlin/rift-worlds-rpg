@@ -1,0 +1,16 @@
+---
+import { getCollection, render } from "astro:content";
+import RuleLayout from "../../layouts/RuleLayout.astro";
+
+export async function getStaticPaths() {
+  const rules = await getCollection("rules", ({ data }) => !data.draft);
+  return rules.map((rule) => ({ params: { id: rule.id }, props: { rule } }));
+}
+
+const { rule } = Astro.props;
+const { Content } = await render(rule);
+---
+
+<RuleLayout title={rule.data.title} description={rule.data.description} eyebrow={rule.data.eyebrow} icon={rule.data.icon} id={rule.id}>
+  <Content />
+</RuleLayout>
