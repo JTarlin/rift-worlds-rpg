@@ -330,13 +330,32 @@ import SiteFooter from "../components/SiteFooter.astro";
     handleCell(Number(hex.dataset.cell));
   });
   map.addEventListener("pointerover", (event) => {
-    if (!pointerPainting || mode !== "paint") return;
+    if (!pointerPainting || mode !== "paint" || (event.buttons & 3) === 0) {
+      pointerPainting = false;
+      contextErasing = false;
+      return;
+    }
     const hex = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-cell]");
     if (hex) {
+      contextErasing = (event.buttons & 2) === 2;
       paintDragged = true;
       paintCell(cells[Number(hex.dataset.cell)]);
       renderMap();
     }
+  });
+  map.addEventListener("pointermove", (event) => {
+    if ((event.buttons & 3) === 0) {
+      pointerPainting = false;
+      contextErasing = false;
+    }
+  });
+  map.addEventListener("pointerleave", () => {
+    pointerPainting = false;
+    contextErasing = false;
+  });
+  window.addEventListener("blur", () => {
+    pointerPainting = false;
+    contextErasing = false;
   });
   window.addEventListener("pointerup", () => {
     pointerPainting = false;
