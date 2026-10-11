@@ -177,7 +177,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     (["A", "B"] as Team[]).forEach((side) => {
       const list = byId(`team-${side.toLowerCase()}-list`);
       const sideUnits = units.filter((unit) => unit.team === side);
-      list.innerHTML = sideUnits.length ? sideUnits.map((unit) => `<li><button type="button" data-unit="${unit.id}">${unit.name}<span>${unit.currentHealth} HP</span></button></li>`).join("") : `<li class="empty">No units deployed</li>`;
+      list.innerHTML = sideUnits.length ? sideUnits.map((unit) => `<li><button type="button" data-unit="${unit.id}">${unit.name}<span>${unit.currentHealth} HP</span></button><button type="button" class="remove-roster-unit" data-remove-unit="${unit.id}" aria-label="Remove ${unit.name}">×</button></li>`).join("") : `<li class="empty">No units deployed</li>`;
     });
   }
 
@@ -246,6 +246,26 @@ import SiteFooter from "../components/SiteFooter.astro";
     renderInitiative();
     renderSelected();
   }
+
+  document.querySelector(".team-rosters")?.addEventListener("click", (event) => {
+    const remove = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-unit]");
+    if (remove) {
+      const unit = units.find((candidate) => candidate.id === remove.dataset.removeUnit);
+      units = units.filter((candidate) => candidate.id !== remove.dataset.removeUnit);
+      initiative = initiative.filter((id) => id !== remove.dataset.removeUnit);
+      if (selectedUnitId === remove.dataset.removeUnit) selectedUnitId = "";
+      if (unit) logActivity(`${unit.name} removed from the battle.`);
+      renderAll();
+      return;
+    }
+    const select = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-unit]");
+    if (select) {
+      selectedUnitId = select.dataset.unit || "";
+      const unit = units.find((candidate) => candidate.id === selectedUnitId);
+      movesRemaining = unit ? movementFor(unit) : 0;
+      renderAll();
+    }
+  });
 
   function paintCell(cell: Cell) {
     cell.zone = erasing ? "" : byId<HTMLInputElement>("zone-name").value.trim();
