@@ -54,10 +54,8 @@ Choose one perk for every even-numbered level. You can select the same perk mult
 
 ## Example: level 7 ninja
 
-- Stealth II
-- Agility II
-- Infiltration
-- Assassination
-- Archery
+- **Offence:** Assassination, Archery
+- **Defence:** Stealth II, Agility II
+- **Tactical:** Infiltration
 
 To stealthily climb a castle tower and enter a daimyo's chambers unseen, the ninja uses Stealth, Agility, and Infiltration: **2d6 + 2 + 2 + 1** against the Animator's target.

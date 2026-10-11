@@ -17,19 +17,25 @@ Level 1 characters have a single skill and no perks. Most characters in the worl
 
 - **Level:** 1
 - **Health:** 2
-- **Skills:** Trading
+- **Offence:** None
+- **Defence:** None
+- **Tactical:** Trading
 
 ### Dog
 
 - **Level:** 1
 - **Health:** 2
-- **Skills:** Hunting
+- **Offence:** Hunting
+- **Defence:** None
+- **Tactical:** None
 
 ### Gremling Thief
 
 - **Level:** 1
 - **Health:** 2
-- **Skills:** Thievery
+- **Offence:** None
+- **Defence:** Thievery
+- **Tactical:** None
 
 ## Level 5
 
@@ -39,21 +45,27 @@ Level 5 characters have five skill points and two perks. They are already formid
 
 - **Level:** 5
 - **Health:** 4
-- **Skills:** Slashing, Looting, Brawling, Drinking, Lying
+- **Offence:** Slashing, Brawling
+- **Defence:** Drinking
+- **Tactical:** Looting, Lying
 - **Perks:** Speed, Multitarget
 
 ### Bull
 
 - **Level:** 5
 - **Health:** 7
-- **Skills:** Charging II, Strength II, Pulling
+- **Offence:** Charging II, Strength II
+- **Defence:** None
+- **Tactical:** Pulling
 - **Perks:** Health, Physical Damage
 
 ### Wrathhound
 
 - **Level:** 5
 - **Health:** 4
-- **Skills:** Hunting II, Fangs, Claws, Smell
+- **Offence:** Fangs, Claws
+- **Defence:** None
+- **Tactical:** Hunting II, Smell
 - **Perks:** Evasive, Lethality
 
 ## Level 10
@@ -65,14 +77,18 @@ Level 10 characters have ten skill points, five perks, and a skill cap of 3. It 
 - **Level:** 10
 - **Health:** 6
 - **Energy:** 6
-- **Skills:** Nature Magic III, Old Language, Ritual Magic II, Intellect, Spirit Magic II, Politics
+- **Offence:** Nature Magic III
+- **Defence:** Spirit Magic II
+- **Tactical:** Old Language, Ritual Magic II, Intellect, Politics
 - **Perks:** Energy II, Recuperation, Energy Shield, Magic Healing
 
 ### Elephant
 
 - **Level:** 10
 - **Health:** 12
-- **Skills:** Trunk, Tusks, Trample II, Strength II, Thick Hide, Bellowing, Wisdom II
+- **Offence:** Tusks, Trample II, Strength II
+- **Defence:** Thick Hide
+- **Tactical:** Trunk, Bellowing, Wisdom II
 - **Perks:** Health II, Physical Damage, Action, Multitarget
 
 ### Reaper Beetle
@@ -80,5 +96,7 @@ Level 10 characters have ten skill points, five perks, and a skill cap of 3. It 
 - **Level:** 10
 - **Health:** 6
 - **Energy:** 3
-- **Skills:** Armour III, Acid Spray II, Climbing, Senses, Mandibles, Flight II
+- **Offence:** Acid Spray II, Mandibles
+- **Defence:** Armour III, Flight II
+- **Tactical:** Climbing, Senses
 - **Perks:** Resistance II, Energy, Lethal Energy II
