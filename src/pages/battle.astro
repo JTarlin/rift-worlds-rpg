@@ -32,6 +32,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       <div class="terrain-controls">
         <label>Terrain color<input id="zone-color" type="color" value="#28705b" /></label>
         <label>Zone name<input id="zone-name" maxlength="30" value="Riftwood" /></label>
+        <button class="button secondary new-zone-button" id="new-zone" type="button">New random zone</button>
         <button class="text-button" id="erase-toggle" type="button">Eraser off</button>
       </div>
       <span class="battle-status" id="battle-status">Paint connected hexes to define battlefield zones.</span>
@@ -135,7 +136,39 @@ import SiteFooter from "../components/SiteFooter.astro";
   const energyFor = (unit: CharacterTemplate) => perkRanks(unit, "Energy") * 3;
   const actionsFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Action")?.ranks || 0);
   const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
+  const zoneAdjectives = ["Ashen", "Azure", "Broken", "Crimson", "Crystal", "Drowned", "Echoing", "Emerald", "Fallen", "Glass", "Golden", "Hollow", "Iron", "Luminous", "Obsidian", "Shattered", "Silver", "Solar", "Storm", "Verdant", "Violet"];
+  const zoneNouns = ["Basin", "Causeway", "Crater", "Crossing", "Dunes", "Fields", "Gardens", "Gorge", "Hollows", "March", "Mire", "Reach", "Ridge", "Ruins", "Scar", "Shelf", "Sprawl", "Thicket", "Vault", "Wastes"];
   const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.color}`;
+  const colorDistance = (first: string, second: string) => {
+    const channels = (color: string) => [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
+    const [r1, g1, b1] = channels(first);
+    const [r2, g2, b2] = channels(second);
+    return Math.hypot(r1 - r2, g1 - g2, b1 - b2);
+  };
+  const randomZoneColor = () => {
+    const used = [...new Set(cells.map((cell) => cell.color).filter(Boolean))];
+    const candidates = Array.from({ length: 24 }, () => {
+      const hue = Math.floor(Math.random() * 360);
+      const saturation = 52 + Math.floor(Math.random() * 24);
+      const lightness = 31 + Math.floor(Math.random() * 18);
+      const match = `hsl(${hue} ${saturation}% ${lightness}%)`;
+      const probe = document.createElement("span");
+      probe.style.color = match;
+      document.body.append(probe);
+      const rgb = getComputedStyle(probe).color.match(/\d+/g)?.slice(0, 3).map(Number) || [40, 112, 91];
+      probe.remove();
+      const hex = `#${rgb.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+      const separation = used.length ? Math.min(...used.map((color) => colorDistance(hex, color))) : 255;
+      return { hex, separation };
+    });
+    return candidates.sort((a, b) => b.separation - a.separation)[0].hex;
+  };
+  const randomZoneName = () => {
+    const used = new Set(cells.map((cell) => cell.zone.toLowerCase()).filter(Boolean));
+    const combinations = zoneAdjectives.flatMap((adjective) => zoneNouns.map((noun) => `${adjective} ${noun}`));
+    const available = combinations.filter((name) => !used.has(name.toLowerCase()));
+    return (available.length ? available : combinations)[Math.floor(Math.random() * (available.length || combinations.length))];
+  };
   const cellNeighbors = (index: number) => {
     const row = Math.floor(index / 12);
     const col = index % 12;
@@ -510,6 +543,15 @@ import SiteFooter from "../components/SiteFooter.astro";
   byId("erase-toggle").addEventListener("click", () => {
     erasing = !erasing;
     byId("erase-toggle").textContent = `Eraser ${erasing ? "on" : "off"}`;
+  });
+  byId("new-zone").addEventListener("click", () => {
+    const name = randomZoneName();
+    const color = randomZoneColor();
+    byId<HTMLInputElement>("zone-name").value = name;
+    byId<HTMLInputElement>("zone-color").value = color;
+    erasing = false;
+    byId("erase-toggle").textContent = "Eraser off";
+    byId("battle-status").textContent = `${name} is ready to paint. Edit its name or color first if desired.`;
   });
 
   const unitSelect = byId<HTMLSelectElement>("unit-template");

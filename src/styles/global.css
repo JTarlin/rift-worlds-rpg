@@ -200,6 +200,7 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .battle-file-actions { display: flex; gap: .7rem; }
 .battle-toolbar { display: grid; grid-template-columns: auto auto 1fr; align-items: end; gap: 1rem; margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--line); background: var(--night-soft); }
 .terrain-controls { display: flex; align-items: end; gap: .8rem; }
+.terrain-controls .new-zone-button { min-height: 2.4rem; padding-block: .4rem; white-space: nowrap; }
 .battle-toolbar label, .battle-card label { display: grid; gap: .25rem; color: var(--muted); font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .battle-toolbar input, .battle-card input, .battle-card select { min-height: 2.4rem; padding: .4rem .55rem; border: 1px solid var(--line); background: var(--night); color: var(--ink); }
 .toolbar-label { display: block; margin-bottom: .25rem; color: var(--muted); font-size: .68rem; font-weight: 700; text-transform: uppercase; }
