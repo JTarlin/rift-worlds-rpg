@@ -30,12 +30,23 @@ import SiteFooter from "../components/SiteFooter.astro";
         </div>
       </div>
       <div class="terrain-controls" data-phase="paint">
-        <label>Terrain color<input id="zone-color" type="color" value="#28705b" /></label>
-        <label>Zone name<input id="zone-name" maxlength="30" value="Riftwood" /></label>
-        <label class="hazard-toggle"><input id="zone-hazard" type="checkbox" /> Hazard</label>
-        <label>Damage<input id="zone-hazard-damage" type="number" min="0" max="99" value="0" /></label>
-        <label class="hazard-effect">Effect<input id="zone-hazard-effect" maxlength="100" placeholder="Burning, slowed, gear corrodes…" /></label>
-        <button class="button secondary new-zone-button" id="new-zone" type="button">New random zone</button>
+        <div class="layer-tabs">
+          <button type="button" class="active" data-map-layer="terrain">Physical terrain</button>
+          <button type="button" data-map-layer="zones">Gameplay zones</button>
+        </div>
+        <div class="layer-controls" data-layer-controls="terrain">
+          <label>Texture<select id="terrain-texture"><option value="stone">Stone</option><option value="earth">Earth</option><option value="water">Water</option><option value="metal">Metal</option><option value="vegetation">Vegetation</option><option value="void">Void</option></select></label>
+          <label>Terrain color<input id="terrain-color" type="color" value="#37464c" /></label>
+          <label class="hazard-toggle"><input id="terrain-impassable" type="checkbox" /> Impassable</label>
+          <label class="hazard-toggle"><input id="terrain-hazard" type="checkbox" /> Hazard</label>
+          <label>Damage<input id="terrain-hazard-damage" type="number" min="0" max="99" value="0" /></label>
+          <label class="hazard-effect">Effect<input id="terrain-hazard-effect" maxlength="100" placeholder="Burning, slowed, gear corrodes…" /></label>
+        </div>
+        <div class="layer-controls" data-layer-controls="zones" hidden>
+          <label>Zone color<input id="zone-color" type="color" value="#28705b" /></label>
+          <label>Zone name<input id="zone-name" maxlength="30" value="Riftwood" /></label>
+          <button class="button secondary new-zone-button" id="new-zone" type="button">New random zone</button>
+        </div>
         <button class="text-button" id="erase-toggle" type="button">Eraser off</button>
       </div>
       <span class="battle-status" id="battle-status">Paint connected hexes to define battlefield zones.</span>
@@ -110,14 +121,16 @@ import SiteFooter from "../components/SiteFooter.astro";
   import { characterTemplates, type CharacterTemplate } from "../data/templates";
   type Mode = "paint" | "deploy" | "play";
   type Team = "A" | "B";
-  type Cell = { index: number; zone: string; color: string; hazard: string; hazardDamage: number };
+  type MapLayer = "terrain" | "zones";
+  type Cell = { index: number; zone: string; zoneColor: string; terrain: string; terrainColor: string; impassable: boolean; hazard: string; hazardDamage: number };
   type Unit = CharacterTemplate & { id: string; team: Team; cell: number; currentHealth: number; currentEnergy: number; actionsUsed: number; initiative: number };
   const storageKey = "rift-worlds-battle-v1";
   const mapsKey = "rift-worlds-maps-v1";
   const rosterKey = "rift-worlds-character-roster-v1";
   const map = document.getElementById("hex-map") as HTMLElement;
-  const cells: Cell[] = Array.from({ length: 96 }, (_, index) => ({ index, zone: "", color: "", hazard: "", hazardDamage: 0 }));
+  const cells: Cell[] = Array.from({ length: 96 }, (_, index) => ({ index, zone: "", zoneColor: "", terrain: "", terrainColor: "", impassable: false, hazard: "", hazardDamage: 0 }));
   let mode: Mode = "paint";
+  let mapLayer: MapLayer = "terrain";
   let team: Team = "A";
   let erasing = false;
   let units: Unit[] = [];
@@ -140,7 +153,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
   const zoneAdjectives = ["Ashen", "Azure", "Broken", "Crimson", "Crystal", "Drowned", "Echoing", "Emerald", "Fallen", "Glass", "Golden", "Hollow", "Iron", "Luminous", "Obsidian", "Shattered", "Silver", "Solar", "Storm", "Verdant", "Violet"];
   const zoneNouns = ["Basin", "Causeway", "Crater", "Crossing", "Dunes", "Fields", "Gardens", "Gorge", "Hollows", "March", "Mire", "Reach", "Ridge", "Ruins", "Scar", "Shelf", "Sprawl", "Thicket", "Vault", "Wastes"];
-  const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.color}\u0000${cell.hazard}\u0000${cell.hazardDamage}`;
+  const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.zoneColor}`;
   const colorDistance = (first: string, second: string) => {
     const channels = (color: string) => [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
     const [r1, g1, b1] = channels(first);
@@ -148,7 +161,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     return Math.hypot(r1 - r2, g1 - g2, b1 - b2);
   };
   const randomZoneColor = () => {
-    const used = [...new Set(cells.map((cell) => cell.color).filter(Boolean))];
+    const used = [...new Set(cells.map((cell) => cell.zoneColor).filter(Boolean))];
     const candidates = Array.from({ length: 24 }, () => {
       const hue = Math.floor(Math.random() * 360);
       const saturation = 52 + Math.floor(Math.random() * 24);
@@ -268,12 +281,12 @@ import SiteFooter from "../components/SiteFooter.astro";
   function renderMap() {
     const renderedCells = cells.map((cell) => {
       const unit = units.find((candidate) => candidate.cell === cell.index);
-      const style = cell.color ? `--zone:${cell.color}` : "";
+      const style = `${cell.terrainColor ? `--terrain:${cell.terrainColor};` : ""}${cell.zoneColor ? `--zone:${cell.zoneColor};` : ""}`;
       const activeUnit = units.find((candidate) => candidate.id === selectedUnitId);
       const distance = activeUnit ? zoneDistance(activeUnit.cell, cell.index) : Number.POSITIVE_INFINITY;
-      const reachable = mode === "play" && selectedUnitId && !unit && distance <= movesRemaining;
+      const reachable = mode === "play" && selectedUnitId && !unit && !cell.impassable && distance <= movesRemaining;
       const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
-      return `<button type="button" class="hex${cell.zone ? " painted" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.zone || "Unpainted hex"}${hazard ? ` — Hazard: ${hazard}` : ""}">
+      return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
         <span class="zone-label">${cell.zone}</span>
         ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
@@ -430,10 +443,16 @@ import SiteFooter from "../components/SiteFooter.astro";
 
   function paintCell(cell: Cell) {
     const shouldErase = erasing || contextErasing;
-    cell.zone = shouldErase ? "" : byId<HTMLInputElement>("zone-name").value.trim();
-    cell.color = shouldErase ? "" : byId<HTMLInputElement>("zone-color").value;
-    cell.hazard = shouldErase || !byId<HTMLInputElement>("zone-hazard").checked ? "" : byId<HTMLInputElement>("zone-hazard-effect").value.trim();
-    cell.hazardDamage = shouldErase || !byId<HTMLInputElement>("zone-hazard").checked ? 0 : Math.max(0, Number(byId<HTMLInputElement>("zone-hazard-damage").value) || 0);
+    if (mapLayer === "terrain") {
+      cell.terrain = shouldErase ? "" : byId<HTMLSelectElement>("terrain-texture").value;
+      cell.terrainColor = shouldErase ? "" : byId<HTMLInputElement>("terrain-color").value;
+      cell.impassable = !shouldErase && byId<HTMLInputElement>("terrain-impassable").checked;
+      cell.hazard = shouldErase || !byId<HTMLInputElement>("terrain-hazard").checked ? "" : byId<HTMLInputElement>("terrain-hazard-effect").value.trim();
+      cell.hazardDamage = shouldErase || !byId<HTMLInputElement>("terrain-hazard").checked ? 0 : Math.max(0, Number(byId<HTMLInputElement>("terrain-hazard-damage").value) || 0);
+    } else {
+      cell.zone = shouldErase ? "" : byId<HTMLInputElement>("zone-name").value.trim();
+      cell.zoneColor = shouldErase ? "" : byId<HTMLInputElement>("zone-color").value;
+    }
   }
 
   function logActivity(message: string) {
@@ -468,7 +487,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       contextErasing = false;
     } else if (mode === "deploy" && erase) {
       removeUnitAt(cellIndex);
-    } else if (mode === "deploy" && !occupying) {
+    } else if (mode === "deploy" && !occupying && !cell.impassable) {
       const template = availableUnits[Number(byId<HTMLSelectElement>("unit-template").value)];
       if (!template) return;
       const deployed = { ...structuredClone(template), id: crypto.randomUUID(), team, cell: cell.index, currentHealth: healthFor(template), currentEnergy: energyFor(template), actionsUsed: 0, initiative: 0 };
@@ -481,7 +500,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     } else if (mode === "play" && selectedUnitId) {
       const unit = units.find((candidate) => candidate.id === selectedUnitId);
       const distance = unit ? zoneDistance(unit.cell, cell.index) : Number.POSITIVE_INFINITY;
-      if (unit && distance <= movesRemaining) {
+      if (unit && !cell.impassable && distance <= movesRemaining) {
         const origin = cells[unit.cell].zone || "unmarked zone";
         unit.cell = cell.index;
         movesRemaining -= distance;
@@ -586,11 +605,16 @@ import SiteFooter from "../components/SiteFooter.astro";
     byId<HTMLInputElement>("zone-color").value = color;
     erasing = false;
     byId("erase-toggle").textContent = "Eraser off";
-    byId<HTMLInputElement>("zone-hazard").checked = false;
-    byId<HTMLInputElement>("zone-hazard-damage").value = "0";
-    byId<HTMLInputElement>("zone-hazard-effect").value = "";
     byId("battle-status").textContent = `${name} is ready to paint. Edit its name or color first if desired.`;
   });
+  document.querySelectorAll<HTMLButtonElement>("[data-map-layer]").forEach((button) => button.addEventListener("click", () => {
+    mapLayer = button.dataset.mapLayer as MapLayer;
+    document.querySelectorAll<HTMLElement>("[data-map-layer]").forEach((item) => item.classList.toggle("active", item.dataset.mapLayer === mapLayer));
+    document.querySelectorAll<HTMLElement>("[data-layer-controls]").forEach((item) => item.hidden = item.dataset.layerControls !== mapLayer);
+    byId("battle-status").textContent = mapLayer === "terrain"
+      ? "Paint physical textures, passability, and hazards. Right-drag erases terrain."
+      : "Paint connected gameplay zones over the physical map. Right-drag erases zone assignments.";
+  }));
 
   const unitSelect = byId<HTMLSelectElement>("unit-template");
   unitSelect.innerHTML = availableUnits.map((unit, index) => `<option value="${index}">${unit.name} — Level ${unit.level}</option>`).join("");
@@ -660,7 +684,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
   byId("new-battle").addEventListener("click", () => {
     if (!confirm("Clear the current map and battle?")) return;
-    cells.forEach((cell) => Object.assign(cell, { zone: "", color: "", hazard: "", hazardDamage: 0 }));
+    cells.forEach((cell) => Object.assign(cell, { zone: "", zoneColor: "", terrain: "", terrainColor: "", impassable: false, hazard: "", hazardDamage: 0 }));
     units = []; initiative = []; turnIndex = 0; round = 1; selectedUnitId = "";
     localStorage.removeItem(storageKey);
     renderAll();
@@ -691,7 +715,12 @@ import SiteFooter from "../components/SiteFooter.astro";
     let maps = loadMaps();
     if (button.dataset.loadMap) {
       const saved = maps.find((map) => map.id === button.dataset.loadMap);
-      saved?.cells.forEach((cell, index) => Object.assign(cells[index], cell));
+      saved?.cells.forEach((cell: Partial<Cell> & { color?: string }, index) => Object.assign(cells[index], {
+        ...cell,
+        zoneColor: cell.zoneColor || "",
+        terrain: cell.terrain || (cell.color ? "earth" : ""),
+        terrainColor: cell.terrainColor || cell.color || "",
+      }));
       if (saved) byId<HTMLInputElement>("map-name").value = saved.name;
       renderMap();
     } else if (button.dataset.deleteMap) {
@@ -704,7 +733,11 @@ import SiteFooter from "../components/SiteFooter.astro";
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
     if (saved) {
-      saved.cells?.forEach((cell: Partial<Cell>, index: number) => Object.assign(cells[index], cell, {
+      saved.cells?.forEach((cell: Partial<Cell> & { color?: string }, index: number) => Object.assign(cells[index], cell, {
+        zoneColor: cell.zoneColor || "",
+        terrain: cell.terrain || (cell.color ? "earth" : ""),
+        terrainColor: cell.terrainColor || cell.color || "",
+        impassable: cell.impassable || false,
         hazard: cell.hazard || "",
         hazardDamage: cell.hazardDamage || 0,
       }));
