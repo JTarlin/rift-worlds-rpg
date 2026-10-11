@@ -13,16 +13,16 @@ Your level determines your total skill points and perks:
 
 - You have skill points equal to your level.
 - You gain one perk at every even-numbered level.
-- Your health is 1, plus 1 for every odd-numbered level, plus 3 per Health perk.
+- Your health is 1 for every odd-numbered level reached, plus 3 per Health perk.
 - Your base energy is 0.
 - You have 1 action and 1 movement per turn.
 
 | Level | Skill points | Perks | Base health | Skill cap |
 | --- | ---: | ---: | ---: | ---: |
-| 1 | 1 | 0 | 2 | 2 |
-| 5 | 5 | 2 | 4 | 2 |
-| 10 | 10 | 5 | 6 | 3 |
-| 20 | 20 | 10 | 11 | 4 |
+| 1 | 1 | 0 | 1 | 2 |
+| 5 | 5 | 2 | 3 | 2 |
+| 10 | 10 | 5 | 5 | 3 |
+| 20 | 20 | 10 | 10 | 4 |
 
 ## Create your skills
 

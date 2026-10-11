@@ -17,7 +17,7 @@ Both sides roll **2d6 + relevant skills and bonuses**. Highest result wins. Ties
 
 ## Character baseline
 
-- Health: 1 + 1 per odd level + 3 per Health perk
+- Health: 1 per odd level reached + 3 per Health perk
 - Energy: 0
 - Actions per turn: 1
 - Movements per turn: 1

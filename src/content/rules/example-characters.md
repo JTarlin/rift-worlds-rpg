@@ -16,7 +16,7 @@ Level 1 characters have a single skill and no perks. Most characters in the worl
 ### Market Vendor
 
 - **Level:** 1
-- **Health:** 2
+- **Health:** 1
 - **Offence:** None
 - **Defence:** None
 - **Tactical:** Trading
@@ -24,7 +24,7 @@ Level 1 characters have a single skill and no perks. Most characters in the worl
 ### Dog
 
 - **Level:** 1
-- **Health:** 2
+- **Health:** 1
 - **Offence:** Hunting
 - **Defence:** None
 - **Tactical:** None
@@ -32,7 +32,7 @@ Level 1 characters have a single skill and no perks. Most characters in the worl
 ### Gremling Thief
 
 - **Level:** 1
-- **Health:** 2
+- **Health:** 1
 - **Offence:** None
 - **Defence:** Thievery
 - **Tactical:** None
@@ -44,7 +44,7 @@ Level 5 characters have five skill points and two perks. They are already formid
 ### Marauder
 
 - **Level:** 5
-- **Health:** 4
+- **Health:** 3
 - **Offence:** Slashing, Brawling
 - **Defence:** Drinking
 - **Tactical:** Looting, Lying
@@ -53,7 +53,7 @@ Level 5 characters have five skill points and two perks. They are already formid
 ### Bull
 
 - **Level:** 5
-- **Health:** 7
+- **Health:** 6
 - **Offence:** Charging II, Strength II
 - **Defence:** None
 - **Tactical:** Pulling
@@ -62,7 +62,7 @@ Level 5 characters have five skill points and two perks. They are already formid
 ### Wrathhound
 
 - **Level:** 5
-- **Health:** 4
+- **Health:** 3
 - **Offence:** Fangs, Claws
 - **Defence:** None
 - **Tactical:** Hunting II, Smell
@@ -75,7 +75,7 @@ Level 10 characters have ten skill points, five perks, and a skill cap of 3. It 
 ### Green Sage
 
 - **Level:** 10
-- **Health:** 6
+- **Health:** 5
 - **Energy:** 6
 - **Offence:** Nature Magic III
 - **Defence:** Spirit Magic II
@@ -85,7 +85,7 @@ Level 10 characters have ten skill points, five perks, and a skill cap of 3. It 
 ### Elephant
 
 - **Level:** 10
-- **Health:** 12
+- **Health:** 11
 - **Offence:** Tusks, Trample II, Strength II
 - **Defence:** Thick Hide
 - **Tactical:** Trunk, Bellowing, Wisdom II
@@ -94,7 +94,7 @@ Level 10 characters have ten skill points, five perks, and a skill cap of 3. It 
 ### Reaper Beetle
 
 - **Level:** 10
-- **Health:** 6
+- **Health:** 5
 - **Energy:** 3
 - **Offence:** Acid Spray II, Mandibles
 - **Defence:** Armour III, Flight II

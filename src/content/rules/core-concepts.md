@@ -23,7 +23,7 @@ Characters have **skill points** and **perks**. Every skill is categorized as **
 
 ### Health
 
-Health equals **1 + 1 for every odd-numbered level + 3 per rank of the Health perk**. Level 1 therefore begins with 2 health, level 5 has 4 before perks, and level 10 has 6 before perks.
+Health equals **1 for every odd-numbered level reached + 3 per rank of the Health perk**. Level 1 therefore begins with 1 health, level 5 has 3 before perks, and level 10 has 5 before perks.
 
 If health drops to zero, the character falls unconscious. Friendly characters can revive them out of combat, and healing can revive them during combat.
 
