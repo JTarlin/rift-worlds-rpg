@@ -32,6 +32,9 @@ import SiteFooter from "../components/SiteFooter.astro";
       <div class="terrain-controls" data-phase="paint">
         <label>Terrain color<input id="zone-color" type="color" value="#28705b" /></label>
         <label>Zone name<input id="zone-name" maxlength="30" value="Riftwood" /></label>
+        <label class="hazard-toggle"><input id="zone-hazard" type="checkbox" /> Hazard</label>
+        <label>Damage<input id="zone-hazard-damage" type="number" min="0" max="99" value="0" /></label>
+        <label class="hazard-effect">Effect<input id="zone-hazard-effect" maxlength="100" placeholder="Burning, slowed, gear corrodes…" /></label>
         <button class="button secondary new-zone-button" id="new-zone" type="button">New random zone</button>
         <button class="text-button" id="erase-toggle" type="button">Eraser off</button>
       </div>
@@ -107,13 +110,13 @@ import SiteFooter from "../components/SiteFooter.astro";
   import { characterTemplates, type CharacterTemplate } from "../data/templates";
   type Mode = "paint" | "deploy" | "play";
   type Team = "A" | "B";
-  type Cell = { index: number; zone: string; color: string };
+  type Cell = { index: number; zone: string; color: string; hazard: string; hazardDamage: number };
   type Unit = CharacterTemplate & { id: string; team: Team; cell: number; currentHealth: number; currentEnergy: number; actionsUsed: number; initiative: number };
   const storageKey = "rift-worlds-battle-v1";
   const mapsKey = "rift-worlds-maps-v1";
   const rosterKey = "rift-worlds-character-roster-v1";
   const map = document.getElementById("hex-map") as HTMLElement;
-  const cells: Cell[] = Array.from({ length: 96 }, (_, index) => ({ index, zone: "", color: "" }));
+  const cells: Cell[] = Array.from({ length: 96 }, (_, index) => ({ index, zone: "", color: "", hazard: "", hazardDamage: 0 }));
   let mode: Mode = "paint";
   let team: Team = "A";
   let erasing = false;
@@ -137,7 +140,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
   const zoneAdjectives = ["Ashen", "Azure", "Broken", "Crimson", "Crystal", "Drowned", "Echoing", "Emerald", "Fallen", "Glass", "Golden", "Hollow", "Iron", "Luminous", "Obsidian", "Shattered", "Silver", "Solar", "Storm", "Verdant", "Violet"];
   const zoneNouns = ["Basin", "Causeway", "Crater", "Crossing", "Dunes", "Fields", "Gardens", "Gorge", "Hollows", "March", "Mire", "Reach", "Ridge", "Ruins", "Scar", "Shelf", "Sprawl", "Thicket", "Vault", "Wastes"];
-  const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.color}`;
+  const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.color}\u0000${cell.hazard}\u0000${cell.hazardDamage}`;
   const colorDistance = (first: string, second: string) => {
     const channels = (color: string) => [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
     const [r1, g1, b1] = channels(first);
@@ -269,8 +272,10 @@ import SiteFooter from "../components/SiteFooter.astro";
       const activeUnit = units.find((candidate) => candidate.id === selectedUnitId);
       const distance = activeUnit ? zoneDistance(activeUnit.cell, cell.index) : Number.POSITIVE_INFINITY;
       const reachable = mode === "play" && selectedUnitId && !unit && distance <= movesRemaining;
-      return `<button type="button" class="hex${cell.zone ? " painted" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.zone || "Unpainted hex"}">
+      const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
+      return `<button type="button" class="hex${cell.zone ? " painted" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.zone || "Unpainted hex"}${hazard ? ` — Hazard: ${hazard}` : ""}">
         <span class="zone-label">${cell.zone}</span>
+        ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
       </button>`;
     });
@@ -427,6 +432,8 @@ import SiteFooter from "../components/SiteFooter.astro";
     const shouldErase = erasing || contextErasing;
     cell.zone = shouldErase ? "" : byId<HTMLInputElement>("zone-name").value.trim();
     cell.color = shouldErase ? "" : byId<HTMLInputElement>("zone-color").value;
+    cell.hazard = shouldErase || !byId<HTMLInputElement>("zone-hazard").checked ? "" : byId<HTMLInputElement>("zone-hazard-effect").value.trim();
+    cell.hazardDamage = shouldErase || !byId<HTMLInputElement>("zone-hazard").checked ? 0 : Math.max(0, Number(byId<HTMLInputElement>("zone-hazard-damage").value) || 0);
   }
 
   function logActivity(message: string) {
@@ -442,6 +449,14 @@ import SiteFooter from "../components/SiteFooter.astro";
     initiative = initiative.filter((id) => id !== unit.id);
     if (selectedUnitId === unit.id) selectedUnitId = "";
     logActivity(`${unit.name} removed from the battle.`);
+  }
+
+  function applyHazard(unit: Unit, cell: Cell) {
+    if (!cell.hazard && !cell.hazardDamage) return;
+    if (cell.hazardDamage) unit.currentHealth = Math.max(0, unit.currentHealth - cell.hazardDamage);
+    const effect = [cell.hazardDamage ? `${cell.hazardDamage} damage` : "", cell.hazard].filter(Boolean).join("; ");
+    byId("battle-status").textContent = `${unit.name} enters ${cell.zone || "a hazardous zone"}: ${effect}.`;
+    logActivity(`${unit.name} triggers ${cell.zone || "a hazard"}: ${effect}.`);
   }
 
   function handleCell(cellIndex: number, erase = false) {
@@ -472,6 +487,7 @@ import SiteFooter from "../components/SiteFooter.astro";
         movesRemaining -= distance;
         const destination = cell.zone || "unmarked zone";
         logActivity(distance === 0 ? `${unit.name} repositions within ${destination}.` : `${unit.name} moves ${distance} zone${distance === 1 ? "" : "s"} from ${origin} to ${destination}.`);
+        applyHazard(unit, cell);
       } else if (unit) {
         byId("battle-status").textContent = `${unit.name} cannot reach that zone with ${movesRemaining} movement remaining.`;
       }
@@ -570,6 +586,9 @@ import SiteFooter from "../components/SiteFooter.astro";
     byId<HTMLInputElement>("zone-color").value = color;
     erasing = false;
     byId("erase-toggle").textContent = "Eraser off";
+    byId<HTMLInputElement>("zone-hazard").checked = false;
+    byId<HTMLInputElement>("zone-hazard-damage").value = "0";
+    byId<HTMLInputElement>("zone-hazard-effect").value = "";
     byId("battle-status").textContent = `${name} is ready to paint. Edit its name or color first if desired.`;
   });
 
@@ -641,7 +660,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   });
   byId("new-battle").addEventListener("click", () => {
     if (!confirm("Clear the current map and battle?")) return;
-    cells.forEach((cell) => Object.assign(cell, { zone: "", color: "" }));
+    cells.forEach((cell) => Object.assign(cell, { zone: "", color: "", hazard: "", hazardDamage: 0 }));
     units = []; initiative = []; turnIndex = 0; round = 1; selectedUnitId = "";
     localStorage.removeItem(storageKey);
     renderAll();
@@ -685,7 +704,10 @@ import SiteFooter from "../components/SiteFooter.astro";
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
     if (saved) {
-      saved.cells?.forEach((cell: Cell, index: number) => Object.assign(cells[index], cell));
+      saved.cells?.forEach((cell: Partial<Cell>, index: number) => Object.assign(cells[index], cell, {
+        hazard: cell.hazard || "",
+        hazardDamage: cell.hazardDamage || 0,
+      }));
       units = (saved.units || []).map((unit: Unit) => ({ ...unit, currentEnergy: unit.currentEnergy ?? energyFor(unit) }));
       initiative = saved.initiative || []; turnIndex = saved.turnIndex || 0; round = saved.round || 1;
     }
