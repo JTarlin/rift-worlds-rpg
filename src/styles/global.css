@@ -232,6 +232,14 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .hex.terrain-water::before { background-image: repeating-radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.16) 0 2px, transparent 3px 10px); }
 .hex.terrain-metal::before { background-image: linear-gradient(135deg, transparent 45%, rgba(255,255,255,.18) 48% 52%, transparent 55%); }
 .hex.terrain-vegetation::before { background-image: radial-gradient(ellipse at 30% 45%, rgba(20,50,20,.35) 0 5px, transparent 6px), radial-gradient(ellipse at 68% 55%, rgba(20,50,20,.35) 0 6px, transparent 7px); }
+.hex.terrain-wood::before { background-image: repeating-linear-gradient(90deg, rgba(40,20,8,.22) 0 2px, transparent 2px 10px), radial-gradient(ellipse at 30% 45%, transparent 0 7px, rgba(45,22,8,.3) 8px 10px, transparent 11px); }
+.hex.terrain-gold::before { background-image: linear-gradient(120deg, transparent 25%, rgba(255,244,173,.4) 45%, transparent 65%), repeating-linear-gradient(0deg, rgba(74,47,0,.18) 0 1px, transparent 1px 9px); }
+.hex.terrain-carpet::before { background-image: repeating-linear-gradient(45deg, rgba(255,220,170,.14) 0 3px, transparent 3px 8px), repeating-linear-gradient(-45deg, rgba(30,5,20,.16) 0 3px, transparent 3px 8px); }
+.hex.terrain-sand::before { background-image: radial-gradient(circle, rgba(90,62,21,.25) 0 1px, transparent 2px); background-size: 8px 8px; }
+.hex.terrain-ice::before { background-image: linear-gradient(125deg, transparent 28%, rgba(235,255,255,.48) 30% 33%, transparent 35%), linear-gradient(35deg, transparent 58%, rgba(235,255,255,.3) 60% 63%, transparent 65%); }
+.hex.terrain-lava::before { background-image: repeating-linear-gradient(125deg, rgba(255,192,32,.7) 0 3px, transparent 3px 13px), radial-gradient(circle, rgba(255,80,10,.5), transparent 60%); }
+.hex.terrain-crystal::before { background-image: linear-gradient(60deg, transparent 35%, rgba(225,210,255,.38) 36% 42%, transparent 43%), linear-gradient(-60deg, transparent 50%, rgba(225,210,255,.25) 51% 57%, transparent 58%); }
+.hex.terrain-snow::before { background-image: radial-gradient(circle at 25% 30%, rgba(255,255,255,.8) 0 2px, transparent 3px), radial-gradient(circle at 70% 65%, rgba(255,255,255,.55) 0 3px, transparent 4px); }
 .hex.terrain-void::before { background-image: radial-gradient(circle, rgba(129,84,180,.5) 0 2px, transparent 3px); background-size: 13px 13px; }
 .hex.zoned::after { position: absolute; inset: 3px; background: color-mix(in srgb, var(--zone) 24%, transparent); clip-path: inherit; content: ""; pointer-events: none; }
 .zone-edge { position: absolute; z-index: 3; width: 35px; height: 6px; border-radius: 4px; background: var(--zone); box-shadow: 0 0 0 1px #000, 0 0 9px color-mix(in srgb, var(--zone) 85%, white); pointer-events: none; transform-origin: center; }

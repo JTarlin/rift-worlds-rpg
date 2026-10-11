@@ -35,8 +35,8 @@ import SiteFooter from "../components/SiteFooter.astro";
           <button type="button" data-map-layer="zones">Gameplay zones</button>
         </div>
         <div class="layer-controls" data-layer-controls="terrain">
-          <label>Texture<select id="terrain-texture"><option value="stone">Stone</option><option value="earth">Earth</option><option value="water">Water</option><option value="metal">Metal</option><option value="vegetation">Vegetation</option><option value="void">Void</option></select></label>
-          <label>Terrain color<input id="terrain-color" type="color" value="#37464c" /></label>
+          <label>Material<select id="terrain-texture"><option value="earth">Earth</option><option value="stone">Stone</option><option value="water">Water</option><option value="metal">Metal</option><option value="vegetation">Vegetation</option><option value="wood">Wood</option><option value="gold">Gold</option><option value="carpet">Carpet</option><option value="sand">Sand</option><option value="ice">Ice</option><option value="lava">Lava</option><option value="crystal">Crystal</option><option value="snow">Snow</option><option value="void">Void</option></select></label>
+          <label>Terrain color<input id="terrain-color" type="color" value="#765136" /></label>
           <label class="hazard-toggle"><input id="terrain-impassable" type="checkbox" /> Impassable</label>
           <label class="hazard-toggle"><input id="terrain-hazard" type="checkbox" /> Hazard</label>
           <label>Damage<input id="terrain-hazard-damage" type="number" min="0" max="99" value="0" /></label>
@@ -153,6 +153,11 @@ import SiteFooter from "../components/SiteFooter.astro";
   const movementFor = (unit: CharacterTemplate) => 1 + (unit.perks.find((perk) => perk.name === "Speed")?.ranks || 0);
   const zoneAdjectives = ["Ashen", "Azure", "Broken", "Crimson", "Crystal", "Drowned", "Echoing", "Emerald", "Fallen", "Glass", "Golden", "Hollow", "Iron", "Luminous", "Obsidian", "Shattered", "Silver", "Solar", "Storm", "Verdant", "Violet"];
   const zoneNouns = ["Basin", "Causeway", "Crater", "Crossing", "Dunes", "Fields", "Gardens", "Gorge", "Hollows", "March", "Mire", "Reach", "Ridge", "Ruins", "Scar", "Shelf", "Sprawl", "Thicket", "Vault", "Wastes"];
+  const terrainColors: Record<string, string> = {
+    earth: "#765136", stone: "#667078", water: "#246aa0", metal: "#9aa5ad", vegetation: "#377447",
+    wood: "#87552f", gold: "#c89525", carpet: "#8c2f59", sand: "#c3a45d", ice: "#8ccad8",
+    lava: "#b83b1d", crystal: "#7557a6", snow: "#d9e5e8", void: "#302044",
+  };
   const zoneKey = (cell: Cell) => `${cell.zone}\u0000${cell.zoneColor}`;
   const colorDistance = (first: string, second: string) => {
     const channels = (color: string) => [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
@@ -625,6 +630,11 @@ import SiteFooter from "../components/SiteFooter.astro";
       ? "Paint physical textures, passability, and hazards. Right-drag erases terrain."
       : "Paint connected gameplay zones over the physical map. Right-drag erases zone assignments.";
   }));
+  byId<HTMLSelectElement>("terrain-texture").addEventListener("change", (event) => {
+    const material = (event.target as HTMLSelectElement).value;
+    byId<HTMLInputElement>("terrain-color").value = terrainColors[material] || "#667078";
+    byId("battle-status").textContent = `${material[0].toUpperCase()}${material.slice(1)} selected with its default color. Customize the color if desired.`;
+  });
 
   const unitSelect = byId<HTMLSelectElement>("unit-template");
   unitSelect.innerHTML = availableUnits.map((unit, index) => `<option value="${index}">${unit.name} — Level ${unit.level}</option>`).join("");
