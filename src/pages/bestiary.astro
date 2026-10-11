@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { characterTemplates } from "../data/templates";
+import { href } from "../data/site";
+---
+
+<BaseLayout title="Bestiary" description="A raypunk fantasy roster of Rift Worlds creatures, warriors, war machines, and demigods.">
+  <SiteHeader />
+  <main id="main-content" class="shell bestiary-page">
+    <header class="builder-heading">
+      <p class="eyebrow">Animator's archive</p>
+      <h1>Bestiary</h1>
+      <p class="lede">Twenty ready-made characters from street-level specialists to apocalypse-scale entities. Add any template to your local roster, then customize it in the builder.</p>
+      <div class="hero-actions">
+        <button class="button primary" id="add-all" type="button">Add all to roster</button>
+        <a class="button secondary" href={href("/builder")}>Open character builder</a>
+      </div>
+      <p class="form-message" id="bestiary-message" role="status"></p>
+    </header>
+    <div class="bestiary-grid">
+      {characterTemplates.map((character, index) => (
+        <article class="bestiary-card">
+          <div class="roster-card-header">
+            <div><span>{character.type}</span><h2>{character.name}</h2></div>
+            <strong>Lvl {character.level}</strong>
+          </div>
+          <div class="roster-stats">
+            <span>{Math.ceil(character.level / 2) + character.healthPerks * 3} Health</span>
+            <span>{character.skills.reduce((sum, skill) => sum + skill.rating, 0)} Skills</span>
+            <span>{character.perks.reduce((sum, perk) => sum + perk.ranks, 0)} Perks</span>
+          </div>
+          <div class="roster-skills">
+            {(["offence", "defence", "tactical"] as const).map((category) => (
+              <div>
+                <span>{category}</span>
+                <p>{character.skills.filter((skill) => skill.category === category).map((skill) => `${skill.name} ${skill.rating}`).join(", ") || "None"}</p>
+              </div>
+            ))}
+          </div>
+          <p class="roster-perks"><strong>Perks:</strong> {character.perks.map((perk) => `${perk.name}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}`).join(", ") || "None"}</p>
+          <p class="roster-notes">{character.notes}</p>
+          <button class="text-button add-template" type="button" data-index={index}>Add to roster</button>
+        </article>
+      ))}
+    </div>
+  </main>
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  import { characterTemplates as templates, type CharacterTemplate } from "../data/templates";
+  type SavedCharacter = CharacterTemplate & { id: string };
+  const storageKey = "rift-worlds-character-roster-v1";
+  const loadRoster = (): SavedCharacter[] => {
+    try { return JSON.parse(localStorage.getItem(storageKey) || "[]") as SavedCharacter[]; }
+    catch { return []; }
+  };
+  const addTemplates = (selected: CharacterTemplate[]) => {
+    const roster = loadRoster();
+    const existing = new Set(roster.map((character) => character.name));
+    const additions = selected.filter((template) => !existing.has(template.name)).map((template) => ({
+      ...structuredClone(template),
+      id: crypto.randomUUID(),
+      skills: template.skills.map((skill) => ({ ...skill, id: crypto.randomUUID() })),
+      perks: template.perks.map((perk) => ({ ...perk, id: crypto.randomUUID() })),
+    }));
+    localStorage.setItem(storageKey, JSON.stringify([...additions, ...roster]));
+    const message = document.getElementById("bestiary-message");
+    if (message) message.textContent = additions.length ? `Added ${additions.length} template${additions.length === 1 ? "" : "s"} to your roster.` : "Those templates are already in your roster.";
+  };
+  document.getElementById("add-all")?.addEventListener("click", () => addTemplates(templates));
+  document.querySelectorAll<HTMLButtonElement>(".add-template").forEach((button) => button.addEventListener("click", () => addTemplates([templates[Number(button.dataset.index)]])));
+</script>

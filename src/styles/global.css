@@ -131,6 +131,7 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .builder-heading h1 { margin-bottom: 1rem; font-size: clamp(3rem, 6vw, 5.5rem); }
 .builder-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, .8fr); align-items: start; gap: 2rem; }
 .builder-form { display: grid; gap: 1rem; }
+.builder-form-wide { max-width: 960px; margin-inline: auto; }
 .builder-panel, .roster-panel { padding: 1.5rem; border: 1px solid var(--line); background: var(--night-soft); }
 .roster-panel { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
 .panel-title { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; }
@@ -187,6 +188,11 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .danger { color: #e59086 !important; }
 .storage-note { margin: -1rem 0 1.5rem; color: var(--dim); font-size: .78rem; }
 .roster-heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .8rem; }
+.bestiary-page { padding-block: 4.5rem 7rem; }
+.bestiary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.bestiary-card { padding: 1.25rem; border: 1px solid var(--line); background: var(--night-soft); }
+.bestiary-card h2 { margin: .2rem 0 .8rem; font-size: 1.15rem; }
+.bestiary-card .text-button { margin-top: 1rem; }
 .roster-list { display: grid; gap: .8rem; }
 .roster-card { padding: 1rem; border: 1px solid var(--line); background: var(--night); }
 .roster-card-header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
@@ -215,6 +221,7 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
   .rules-sidebar a { border-bottom: 1px solid var(--line); border-left: 0; }
   .builder-layout { grid-template-columns: 1fr; }
   .roster-panel { position: static; max-height: none; }
+  .bestiary-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
