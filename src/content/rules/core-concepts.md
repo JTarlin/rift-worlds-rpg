@@ -19,11 +19,13 @@ When your character attempts something non-trivial with consequences for failure
 
 ## Character attributes
 
-Characters have **skill points** and **perks**. Skill points add bonuses to dice rolls made to resolve situations. Perks provide additional benefits such as health, damage, energy, actions, and movement.
+Characters have **skill points** and **perks**. Every skill is categorized as **offence**, **defence**, or **tactical**. Skill points add bonuses to dice rolls made to resolve situations, while perks provide benefits such as health, damage, energy, actions, and movement.
 
 ### Health
 
-All characters start with **1 health**, then gain more through perks. If health drops to zero, the character falls unconscious. Friendly characters can revive them out of combat, and healing can revive them during combat.
+Health equals **1 + 1 for every odd-numbered level + 3 per rank of the Health perk**. Level 1 therefore begins with 2 health, level 5 has 4 before perks, and level 10 has 6 before perks.
+
+If health drops to zero, the character falls unconscious. Friendly characters can revive them out of combat, and healing can revive them during combat.
 
 Hazards and enemies can damage an unconscious character again. If they do, the character dies.
 

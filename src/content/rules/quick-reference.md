@@ -17,7 +17,7 @@ Both sides roll **2d6 + relevant skills and bonuses**. Highest result wins. Ties
 
 ## Character baseline
 
-- Health: 1
+- Health: 1 + 1 per odd level + 3 per Health perk
 - Energy: 0
 - Actions per turn: 1
 - Movements per turn: 1
@@ -29,6 +29,10 @@ Both sides roll **2d6 + relevant skills and bonuses**. Highest result wins. Ties
 ## Combat skills
 
 Assign every skill to offence, defence, or tactical use. Each skill can be used once per round.
+
+- **Offence:** Attack and cause harmful effects.
+- **Defence:** Resist attacks and direct threats.
+- **Tactical:** Gain advantage, determine initiative order, and defend against tactics.
 
 ## Energy
 
@@ -44,7 +48,7 @@ Move to one adjacent zone per movement. Speed increases movement distance. Dash 
 
 ## Common stacking perks
 
-- Health: +3 health
+- Health perk: +3 health
 - Energy: +3 max energy
 - Action: +1 action
 - Speed: +1 movement distance

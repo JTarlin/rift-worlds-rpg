@@ -15,7 +15,7 @@ A character can also move once per turn. Movement allows them to enter an adjace
 
 ## Using skills in combat
 
-Every skill point is assigned to an **offence**, **defence**, or **tactical** skill. Each individual skill can be used once per round.
+Every skill is categorized as **offence**, **defence**, or **tactical**. Each individual skill can be used once per round.
 
 A character with Swordsmanship, Dancing II, and Charm II could:
 
@@ -24,6 +24,16 @@ A character with Swordsmanship, Dancing II, and Charm II could:
 - Use Dancing when attacked to improve a defence roll.
 
 This character fights by jabbing with a sword while evading and misdirecting enemies through fancy footwork and guile.
+
+## Tactical contests
+
+Tactical skills control the shape and timing of battle. Use tactical contests to:
+
+- **Gain advantage:** Oppose an enemy's tactical or defensive skill. On a win, gain advantage on the relevant follow-up roll.
+- **Determine initiative:** At the beginning of combat, characters make a tactical contest. Resolve turns from highest result to lowest; tied results favor the side initiating the conflict.
+- **Defend against tactics:** When another character attempts to feint, intimidate, reposition, distract, or otherwise create a tactical edge, oppose them with a relevant tactical skill.
+
+Tactical actions do not deal damage by themselves unless an ability explicitly says otherwise.
 
 ## Attacks and defence
 

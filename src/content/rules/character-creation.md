@@ -13,16 +13,16 @@ Your level determines your total skill points and perks:
 
 - You have skill points equal to your level.
 - You gain one perk at every even-numbered level.
-- Your base health is 1.
+- Your health is 1, plus 1 for every odd-numbered level, plus 3 per Health perk.
 - Your base energy is 0.
 - You have 1 action and 1 movement per turn.
 
-| Level | Skill points | Perks | Skill cap |
-| --- | ---: | ---: | ---: |
-| 1 | 1 | 0 | 2 |
-| 5 | 5 | 2 | 2 |
-| 10 | 10 | 5 | 3 |
-| 20 | 20 | 10 | 4 |
+| Level | Skill points | Perks | Base health | Skill cap |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 1 | 0 | 2 | 2 |
+| 5 | 5 | 2 | 4 | 2 |
+| 10 | 10 | 5 | 6 | 3 |
+| 20 | 20 | 10 | 11 | 4 |
 
 ## Create your skills
 
@@ -40,7 +40,13 @@ Advanced skills can be practiced talents, professions, or magical abilities. Exa
 
 ## Categorize combat skills
 
-Whenever you gain a skill point, assign that skill to **offence**, **defence**, or **tactical** use. You may use each skill once per combat round.
+Every skill is assigned to one of three categories:
+
+- **Offence** skills are used to attack and cause harmful effects.
+- **Defence** skills oppose attacks and other direct threats.
+- **Tactical** skills are used to gain advantage, determine initiative order, and defend against other tactics.
+
+You may use each individual skill once per combat round.
 
 ## Select perks
 

@@ -36,6 +36,6 @@ Both sides roll **2d6**, adding all relevant skills and bonuses. The higher resu
 
 ## Advantage
 
-Some perks grant advantage to particular checks or contests. When you have advantage, roll an additional d6 and keep the best two dice before adding bonuses.
+Some perks grant advantage to particular checks or contests. Tactical contests are the primary way to gain advantage during combat. When you have advantage, roll an additional d6 and keep the best two dice before adding bonuses.
 
 The source rules explicitly grant advantage through the Evasive perk; the Animator determines when other effects provide it.
