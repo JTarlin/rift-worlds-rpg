@@ -442,6 +442,10 @@ import SiteFooter from "../components/SiteFooter.astro";
       }
       const category = button.dataset.skillCategory;
       const key = button.dataset.skillKey || "";
+      if ((category === "offence" || category === "tactical") && !target) {
+        byId("battle-status").textContent = `Select a target before activating ${button.textContent?.replace(" · used", "")}.`;
+        return;
+      }
       if ((category === "offence" || category === "tactical") && target && !targetInRange) {
         byId("battle-status").textContent = `${target.name} is ${targetDistance} zones away; ${unit.name}'s Range permits ${skillRange}.`;
         return;
@@ -473,18 +477,28 @@ import SiteFooter from "../components/SiteFooter.astro";
         const defender = rollSide(defenderBonus, defenderAdvantage);
         const success = attacker.total >= defender.total;
         const margin = Math.abs(attacker.total - defender.total);
-        latestResolution = `<div class="contest-result ${success ? "success" : "failure"}"><strong>${success ? "SUCCESS" : "DEFENDED"}</strong><span>Margin ${margin}</span></div>
+        const baseDamage = category === "offence"
+          ? perkRanks(unit, "Physical Damage") + perkRanks(unit, "Magic Damage") + pendingEnergyDamage
+          : 0;
+        const lethalityDamage = category === "offence" && attackerAdvantage ? perkRanks(unit, "Lethality") : 0;
+        const resisted = Math.min(baseDamage + lethalityDamage, perkRanks(target, "Resistance"));
+        const damage = success ? Math.max(0, baseDamage + lethalityDamage - resisted) : 0;
+        if (damage) target.currentHealth = Math.max(0, target.currentHealth - damage);
+        const outcome = category === "offence"
+          ? success ? `HIT · ${damage} DAMAGE` : "MISS"
+          : success ? "TACTIC SUCCEEDS · ADVANTAGE GAINED" : "TACTIC DEFENDED";
+        latestResolution = `<div class="contest-result ${success ? "success" : "failure"}"><strong>${outcome}</strong><span>Margin ${margin}</span></div>
           <div class="contest-side"><b>${unit.name}</b><strong>${attacker.total}</strong><span>Rolled [${attacker.dice.join(", ")}], kept ${attacker.kept.join(" + ")} + ${attackerBonus}${pendingEnergyBoost ? ` + ${pendingEnergyBoost} energy` : ""}${attackerAdvantage ? " · advantage" : ""}</span></div>
-          <div class="contest-side"><b>${target.name}</b><strong>${defender.total}</strong><span>Rolled [${defender.dice.join(", ")}], kept ${defender.kept.join(" + ")} + ${defenderBonus}${defenderAdvantage ? " · advantage" : ""}${defenceSkill ? ` · ${defenceSkill.name}` : " · no matching skill"}</span></div>`;
-        byId("battle-status").textContent = `${unit.name}'s ${skillName} ${success ? `succeeds against ${target.name}` : `is defended by ${target.name}`} by ${margin}.`;
-        logActivity(`${unit.name} uses ${skillName} against ${target.name}: ${attacker.total} vs ${defender.total}, ${success ? "success" : "defended"}.`);
+          <div class="contest-side"><b>${target.name}</b><strong>${defender.total}</strong><span>Rolled [${defender.dice.join(", ")}], kept ${defender.kept.join(" + ")} + ${defenderBonus}${defenderAdvantage ? " · advantage" : ""}${defenceSkill ? ` · ${defenceSkill.name}` : " · no matching skill"}</span></div>
+          ${category === "offence" && success ? `<div class="damage-result"><strong>${target.currentHealth}/${healthFor(target)} HP</strong><span>${baseDamage + lethalityDamage} damage${resisted ? ` − ${resisted} resistance` : ""} = ${damage} applied</span></div>` : ""}`;
+        byId("battle-status").textContent = category === "offence"
+          ? `${unit.name}'s ${skillName} ${success ? `hits ${target.name} for ${damage} damage` : `misses ${target.name}`}.`
+          : `${unit.name}'s ${skillName} ${success ? `succeeds and grants advantage` : `is defended by ${target.name}`}.`;
+        logActivity(`${unit.name} uses ${skillName} against ${target.name}: ${outcome.toLowerCase()}.`);
         pendingEnergyBoost = 0;
         if (attackerAdvantage) advantageUnitId = "";
         if (category === "tactical" && success) advantageUnitId = unit.id;
-        if (success && pendingEnergyDamage) {
-          byId("battle-status").textContent += ` ${pendingEnergyDamage} magical damage is ready to apply.`;
-          pendingEnergyDamage = 0;
-        }
+        if (category === "offence") pendingEnergyDamage = 0;
       } else {
         const advantage = advantageUnitId === unit.id;
         const dice = Array.from({ length: advantage ? 3 : 2 }, () => Math.ceil(Math.random() * 6));
