@@ -243,7 +243,10 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .hex.terrain-void::before { background-image: radial-gradient(circle, rgba(129,84,180,.5) 0 2px, transparent 3px); background-size: 13px 13px; }
 .hex.zoned::after { position: absolute; inset: 3px; background: color-mix(in srgb, var(--zone) 24%, transparent); clip-path: inherit; content: ""; pointer-events: none; }
 .zone-boundary-layer { position: absolute; inset: 0; z-index: 4; width: 750px; height: 500px; overflow: visible; pointer-events: none; }
-.zone-boundary-layer line { fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; paint-order: stroke; filter: drop-shadow(0 0 1px #000); }
+.zone-boundary-layer line { fill: none; stroke-linecap: butt; stroke-linejoin: miter; paint-order: stroke; }
+.zone-boundary-layer .zone-outer-edge { stroke-width: 5; filter: drop-shadow(0 0 1px #000); }
+.zone-boundary-layer .zone-divider-under { stroke-width: 7; }
+.zone-boundary-layer .zone-divider-over { stroke-width: 3; filter: drop-shadow(0 0 1px #000); }
 .hex.impassable { cursor: not-allowed; }
 .hex.impassable::before { filter: brightness(.45); }
 .hex.hazardous::before { background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(255,184,77,.22) 8px 13px); }

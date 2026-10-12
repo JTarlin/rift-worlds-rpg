@@ -231,6 +231,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       );
     };
     const lines: string[] = [];
+    const sharedEdges = new Set<string>();
     cells.forEach((cell, index) => {
       if (!cell.zone || !cell.zoneColor) return;
       const row = Math.floor(index / 12);
@@ -243,7 +244,16 @@ import SiteFooter from "../components/SiteFooter.astro";
         if (neighbor >= 0 && zoneKey(cells[neighbor]) === zoneKey(cell)) return;
         const [x1, y1] = vertices[start];
         const [x2, y2] = vertices[end];
-        lines.push(`<line x1="${x + x1}" y1="${y + y1}" x2="${x + x2}" y2="${y + y2}" stroke="${cell.zoneColor}" />`);
+        if (neighbor >= 0 && cells[neighbor].zone) {
+          const edgeId = [index, neighbor].sort((a, b) => a - b).join("-");
+          if (sharedEdges.has(edgeId)) return;
+          sharedEdges.add(edgeId);
+          const otherColor = cells[neighbor].zoneColor;
+          lines.push(`<line class="zone-divider-under" x1="${x + x1}" y1="${y + y1}" x2="${x + x2}" y2="${y + y2}" stroke="${cell.zoneColor}" />`);
+          lines.push(`<line class="zone-divider-over" x1="${x + x1}" y1="${y + y1}" x2="${x + x2}" y2="${y + y2}" stroke="${otherColor}" />`);
+        } else {
+          lines.push(`<line class="zone-outer-edge" x1="${x + x1}" y1="${y + y1}" x2="${x + x2}" y2="${y + y2}" stroke="${cell.zoneColor}" />`);
+        }
       });
     });
     return `<svg class="zone-boundary-layer" viewBox="0 0 ${width} ${height}" aria-hidden="true">${lines.join("")}</svg>`;
