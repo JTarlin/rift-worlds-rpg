@@ -215,6 +215,29 @@ import SiteFooter from "../components/SiteFooter.astro";
     }
     return visited;
   };
+  const zoneBoundarySvg = () => {
+    const width = 750;
+    const height = 500;
+    const vertices = [[30, 0], [60, 20], [60, 60], [30, 80], [0, 60], [0, 20]];
+    const edges = [[4, 5], [1, 2], [5, 0], [0, 1], [3, 4], [2, 3]];
+    const lines: string[] = [];
+    cells.forEach((cell, index) => {
+      if (!cell.zone || !cell.zoneColor) return;
+      const row = Math.floor(index / 12);
+      const col = index % 12;
+      const x = col * 60 + (row % 2 ? 30 : 0);
+      const y = row * 60;
+      const neighbors = cellNeighbors(index);
+      edges.forEach(([start, end], direction) => {
+        const neighbor = neighbors[direction];
+        if (neighbor !== undefined && zoneKey(cells[neighbor]) === zoneKey(cell)) return;
+        const [x1, y1] = vertices[start];
+        const [x2, y2] = vertices[end];
+        lines.push(`<line x1="${x + x1}" y1="${y + y1}" x2="${x + x2}" y2="${y + y2}" stroke="${cell.zoneColor}" />`);
+      });
+    });
+    return `<svg class="zone-boundary-layer" viewBox="0 0 ${width} ${height}" aria-hidden="true">${lines.join("")}</svg>`;
+  };
   const zoneDistance = (from: number, to: number) => {
     if (from === to) return 0;
     const startZone = connectedZone(from);
@@ -286,28 +309,18 @@ import SiteFooter from "../components/SiteFooter.astro";
   function renderMap() {
     const renderedCells = cells.map((cell) => {
       const unit = units.find((candidate) => candidate.cell === cell.index);
-      const boundaries = cell.zone ? cellNeighbors(cell.index)
-        .map((neighbor, direction) => zoneKey(cells[neighbor]) !== zoneKey(cell) ? direction : -1)
-        .filter((direction) => direction >= 0) : [];
-      const row = Math.floor(cell.index / 12);
-      const col = cell.index % 12;
-      if (col === 0) boundaries.push(0);
-      if (col === 11) boundaries.push(1);
-      if (row === 0) boundaries.push(2, 3);
-      if (row === 7) boundaries.push(4, 5);
       const style = `${cell.terrainColor ? `--terrain:${cell.terrainColor};` : ""}${cell.zoneColor ? `--zone:${cell.zoneColor};` : ""}`;
       const activeUnit = units.find((candidate) => candidate.id === selectedUnitId);
       const distance = activeUnit ? zoneDistance(activeUnit.cell, cell.index) : Number.POSITIVE_INFINITY;
       const reachable = mode === "play" && selectedUnitId && !unit && !cell.impassable && distance <= movesRemaining;
       const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
       return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
-        ${boundaries.map((direction) => `<span class="zone-edge edge-${direction}" aria-hidden="true"></span>`).join("")}
         <span class="zone-label">${cell.zone}</span>
         ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
       </button>`;
     });
-    map.innerHTML = Array.from({ length: 8 }, (_, row) => `<div class="hex-row${row % 2 ? " offset" : ""}">${renderedCells.slice(row * 12, row * 12 + 12).join("")}</div>`).join("");
+    map.innerHTML = `${Array.from({ length: 8 }, (_, row) => `<div class="hex-row${row % 2 ? " offset" : ""}">${renderedCells.slice(row * 12, row * 12 + 12).join("")}</div>`).join("")}${zoneBoundarySvg()}`;
   }
 
   function renderDeployment() {
