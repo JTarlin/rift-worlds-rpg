@@ -220,6 +220,16 @@ import SiteFooter from "../components/SiteFooter.astro";
     const height = 500;
     const vertices = [[30, 0], [60, 20], [60, 60], [30, 80], [0, 60], [0, 20]];
     const edges = [[4, 5], [1, 2], [5, 0], [0, 1], [3, 4], [2, 3]];
+    const neighborDirections = (index: number) => {
+      const row = Math.floor(index / 12);
+      const col = index % 12;
+      const coordinates = row % 2 === 0
+        ? [[row, col - 1], [row, col + 1], [row - 1, col - 1], [row - 1, col], [row + 1, col - 1], [row + 1, col]]
+        : [[row, col - 1], [row, col + 1], [row - 1, col], [row - 1, col + 1], [row + 1, col], [row + 1, col + 1]];
+      return coordinates.map(([nextRow, nextCol]) =>
+        nextRow >= 0 && nextRow < 8 && nextCol >= 0 && nextCol < 12 ? nextRow * 12 + nextCol : -1
+      );
+    };
     const lines: string[] = [];
     cells.forEach((cell, index) => {
       if (!cell.zone || !cell.zoneColor) return;
@@ -227,10 +237,10 @@ import SiteFooter from "../components/SiteFooter.astro";
       const col = index % 12;
       const x = col * 60 + (row % 2 ? 30 : 0);
       const y = row * 60;
-      const neighbors = cellNeighbors(index);
+      const neighbors = neighborDirections(index);
       edges.forEach(([start, end], direction) => {
         const neighbor = neighbors[direction];
-        if (neighbor !== undefined && zoneKey(cells[neighbor]) === zoneKey(cell)) return;
+        if (neighbor >= 0 && zoneKey(cells[neighbor]) === zoneKey(cell)) return;
         const [x1, y1] = vertices[start];
         const [x2, y2] = vertices[end];
         lines.push(`<line x1="${x + x1}" y1="${y + y1}" x2="${x + x2}" y2="${y + y2}" stroke="${cell.zoneColor}" />`);
