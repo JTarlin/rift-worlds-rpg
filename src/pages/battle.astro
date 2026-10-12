@@ -496,8 +496,19 @@ import SiteFooter from "../components/SiteFooter.astro";
           pendingEnergyDamage = 0;
         }
       } else {
-        byId<HTMLInputElement>("roll-bonus").value = `${attackerBonus}`;
-        byId("battle-status").textContent = `${unit.name} uses ${skillName}. Roll when ready.`;
+        const advantage = byId<HTMLInputElement>("roll-advantage").checked;
+        const dice = Array.from({ length: advantage ? 3 : 2 }, () => Math.ceil(Math.random() * 6));
+        const kept = [...dice].sort((a, b) => b - a).slice(0, 2);
+        const total = kept[0] + kept[1] + attackerBonus + pendingEnergyBoost;
+        byId("dice-result").innerHTML = `<div class="contest-result success"><strong>${skillName}</strong><span>Total ${total}</span></div>
+          <div class="contest-side"><b>${unit.name}</b><strong>${total}</strong><span>Rolled [${dice.join(", ")}], kept ${kept.join(" + ")} + ${attackerBonus}${pendingEnergyBoost ? ` + ${pendingEnergyBoost} energy` : ""}${advantage ? " · advantage" : ""}</span></div>`;
+        byId("compact-dice-result").textContent = `${total}`;
+        const entry = document.createElement("li");
+        entry.textContent = `${unit.name} uses ${skillName}: ${total}`;
+        byId("roll-log").prepend(entry);
+        byId("battle-status").textContent = `${unit.name} uses ${skillName} and rolls ${total}.`;
+        logActivity(`${unit.name} uses ${skillName}: ${total}.`);
+        pendingEnergyBoost = 0;
       }
       renderSelected();
     }));
