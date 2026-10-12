@@ -140,6 +140,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   let erasing = false;
   let units: Unit[] = [];
   let selectedUnitId = "";
+  let targetUnitId = "";
   let initiative: string[] = [];
   let turnIndex = 0;
   let round = 1;
@@ -336,12 +337,13 @@ import SiteFooter from "../components/SiteFooter.astro";
     const renderedCells = cells.map((cell) => {
       const unit = units.find((candidate) => candidate.cell === cell.index);
       const style = `${cell.terrainColor ? `--terrain:${cell.terrainColor};` : ""}${cell.zoneColor ? `--zone:${cell.zoneColor};` : ""}`;
-      const activeUnit = units.find((candidate) => candidate.id === selectedUnitId);
+      const turnActorId = initiative[turnIndex] || selectedUnitId;
+      const activeUnit = units.find((candidate) => candidate.id === turnActorId);
       const distance = activeUnit ? zoneDistance(activeUnit.cell, cell.index) : Number.POSITIVE_INFINITY;
       const reachable = mode === "play" && selectedUnitId && !unit && !cell.impassable && distance <= movesRemaining;
       const moveCost = reachable ? distance : 0;
       const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
-      return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${unit?.id === lastMovedUnitId ? " just-moved" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
+      return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === turnActorId ? " selected" : ""}${unit?.id === targetUnitId ? " targeted" : ""}${unit?.id === lastMovedUnitId ? " just-moved" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
         <span class="zone-label">${cell.zone}</span>
         ${reachable ? `<span class="move-cost">${moveCost}</span>` : ""}
         ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
@@ -371,6 +373,7 @@ import SiteFooter from "../components/SiteFooter.astro";
 
   function renderSelected() {
     const unit = units.find((candidate) => candidate.id === selectedUnitId);
+    const target = units.find((candidate) => candidate.id === targetUnitId);
     byId("selected-name").textContent = unit?.name || "No unit selected";
     if (!unit) {
       byId("selected-unit").innerHTML = `<p class="storage-note">Choose a deployed unit to view its skills, perks, health, and actions.</p>`;
@@ -390,6 +393,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       <div class="unit-vitals"><label>Energy <input id="unit-energy" type="number" min="0" max="${maxEnergy}" value="${unit.currentEnergy}"></label><span>/ ${maxEnergy}</span></div>
       <div class="unit-vitals"><label>Actions used <input id="unit-actions" type="number" min="0" max="${actionsFor(unit)}" value="${unit.actionsUsed}"></label><span>/ ${actionsFor(unit)}</span></div>
       <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"} · ${movesRemaining} remaining</p>
+      ${target ? `<p class="target-meta">Target: <strong>${target.name}</strong> · Team ${target.team} · ${target.currentHealth} HP</p>` : `<p class="target-meta">Click another unit on the map to target it.</p>`}
       <div class="energy-use-list"><h3>Spend energy</h3>${energyAbilities.join("") || "<span>This unit has no energy pool.</span>"}</div>
       <div class="usable-list">${(["offence", "defence", "tactical"] as const).map((category) => `<div><h3>${category}</h3>${unit.skills.filter((skill) => skill.category === category).map((skill) => `<button type="button" data-skill="${skill.rating}">${skill.name} ${skill.rating}</button>`).join("") || "<span>None</span>"}</div>`).join("")}</div>
       <div class="perk-use-list"><h3>Perks</h3>${unit.perks.map((perk) => `<button type="button" data-perk="${perk.name}">${perk.name}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}</button>`).join("") || "<span>None</span>"}</div>
@@ -430,13 +434,18 @@ import SiteFooter from "../components/SiteFooter.astro";
       renderSelected();
     }));
     byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-skill]").forEach((button) => button.addEventListener("click", () => {
+      const turnActorId = initiative[turnIndex] || selectedUnitId;
+      if (unit.id !== turnActorId) {
+        byId("battle-status").textContent = `It is not ${unit.name}'s turn.`;
+        return;
+      }
       if (unit.actionsUsed >= actionsFor(unit)) {
         byId("battle-status").textContent = `${unit.name} has no actions remaining this turn.`;
         return;
       }
       unit.actionsUsed += 1;
       byId<HTMLInputElement>("roll-bonus").value = button.dataset.skill || "0";
-      byId("battle-status").textContent = `${unit.name} uses ${button.textContent}. One action spent; roll when ready.`;
+      byId("battle-status").textContent = `${unit.name} uses ${button.textContent}${target ? ` against ${target.name}` : ""}. One action spent; roll when ready.`;
       renderSelected();
     }));
     byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-perk]").forEach((button) => button.addEventListener("click", () => {
@@ -551,10 +560,19 @@ import SiteFooter from "../components/SiteFooter.astro";
       logActivity(`${deployed.name} deployed for Team ${team}.`);
       byId("battle-status").textContent = `${deployed.name} deployed for Team ${team}. Click another empty hex to place another.`;
     } else if (occupying) {
-      selectedUnitId = occupying.id;
-      movesRemaining = movementFor(occupying);
+      const turnActorId = initiative[turnIndex];
+      if (mode === "play" && turnActorId && occupying.id !== turnActorId) {
+        targetUnitId = targetUnitId === occupying.id ? "" : occupying.id;
+        selectedUnitId = turnActorId;
+        byId("battle-status").textContent = targetUnitId ? `${occupying.name} targeted.` : "Target cleared.";
+      } else {
+        selectedUnitId = occupying.id;
+        targetUnitId = "";
+        movesRemaining = movementFor(occupying);
+      }
     } else if (mode === "play" && selectedUnitId) {
-      const unit = units.find((candidate) => candidate.id === selectedUnitId);
+      const turnActorId = initiative[turnIndex] || selectedUnitId;
+      const unit = units.find((candidate) => candidate.id === turnActorId);
       const distance = unit ? zoneDistance(unit.cell, cell.index) : Number.POSITIVE_INFINITY;
       if (unit && !cell.impassable && distance <= movesRemaining) {
         const origin = cells[unit.cell].zone || "unmarked zone";
@@ -701,6 +719,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     turnIndex = 0;
     round = 1;
     selectedUnitId = initiative[0] || "";
+    targetUnitId = "";
     const active = units.find((unit) => unit.id === selectedUnitId);
     movesRemaining = active ? movementFor(active) : 0;
     logActivity("Initiative rolled. Match begins.");
@@ -723,6 +742,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       units.forEach((unit) => unit.actionsUsed = 0);
     }
     selectedUnitId = initiative[turnIndex];
+    targetUnitId = "";
     const active = units.find((unit) => unit.id === selectedUnitId);
     movesRemaining = active ? movementFor(active) : 0;
     if (active) logActivity(`${active.name}'s turn begins.`);
