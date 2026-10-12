@@ -342,11 +342,13 @@ import SiteFooter from "../components/SiteFooter.astro";
       const reachable = mode === "play" && selectedUnitId && !unit && !cell.impassable && distance <= movesRemaining;
       const moveCost = reachable ? distance : 0;
       const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
+      const maxHealth = unit ? healthFor(unit) : 1;
+      const healthPercent = unit ? Math.max(0, Math.min(100, unit.currentHealth / maxHealth * 100)) : 0;
       return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === turnActorId ? " selected" : ""}${unit?.id === targetUnitId ? " targeted" : ""}${unit?.id === lastMovedUnitId ? " just-moved" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
         <span class="zone-label">${cell.zone}</span>
         ${reachable ? `<span class="move-cost">${moveCost}</span>` : ""}
         ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
-        ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
+        ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span><span class="token-health"><span style="width:${healthPercent}%"></span></span><span class="token-health-label">${unit.currentHealth}/${maxHealth}</span>` : ""}
       </button>`;
     });
     map.innerHTML = `${Array.from({ length: 8 }, (_, row) => `<div class="hex-row${row % 2 ? " offset" : ""}">${renderedCells.slice(row * 12, row * 12 + 12).join("")}</div>`).join("")}${zoneBoundarySvg()}`;
@@ -383,6 +385,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     const skillRange = perkRanks(unit, "Range");
     const targetDistance = target ? zoneDistance(unit.cell, target.cell) : null;
     const targetInRange = targetDistance !== null && targetDistance <= skillRange;
+    const healthPercent = Math.max(0, Math.min(100, unit.currentHealth / maxHealth * 100));
     const energyAbilities = [
       maxEnergy ? `<button type="button" data-energy-use="roll">Boost next roll +1</button>` : "",
       maxEnergy ? `<button type="button" data-energy-use="damage">Empower next attack</button>` : "",
@@ -391,7 +394,8 @@ import SiteFooter from "../components/SiteFooter.astro";
       perkRanks(unit, "Magic Healing") ? `<button type="button" data-energy-use="healing">Magic Healing: restore 2 health</button>` : "",
     ].filter(Boolean);
     byId("selected-unit").innerHTML = `
-      <div class="unit-vitals"><label>Health <input id="unit-health" type="number" min="0" max="${maxHealth}" value="${unit.currentHealth}"></label><span>/ ${maxHealth}</span></div>
+      <div class="health-display"><div><strong>${unit.currentHealth}</strong><span>/ ${maxHealth} HP</span></div><div class="health-bar"><span style="width:${healthPercent}%"></span></div></div>
+      <div class="unit-vitals"><label>Adjust health <input id="unit-health" type="number" min="0" max="${maxHealth}" value="${unit.currentHealth}"></label></div>
       <div class="unit-vitals"><label>Energy <input id="unit-energy" type="number" min="0" max="${maxEnergy}" value="${unit.currentEnergy}"></label><span>/ ${maxEnergy}</span></div>
       <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"} · ${movesRemaining} remaining</p>
       <p class="unit-meta">${unit.usedSkills.length} skill activation${unit.usedSkills.length === 1 ? "" : "s"} used · ${unit.bonusActivations} bonus reactivation${unit.bonusActivations === 1 ? "" : "s"} remaining</p>
@@ -460,8 +464,41 @@ import SiteFooter from "../components/SiteFooter.astro";
       } else if (category !== "defence") {
         unit.usedSkills.push(key);
       }
-      byId<HTMLInputElement>("roll-bonus").value = button.dataset.skill || "0";
-      byId("battle-status").textContent = `${unit.name} uses ${button.textContent?.replace(" · used", "")}${target ? ` against ${target.name}` : ""}. Roll when ready.`;
+      const skillName = button.textContent?.replace(" · used", "") || "skill";
+      const attackerBonus = Number(button.dataset.skill) || 0;
+      if (target && (category === "offence" || category === "tactical")) {
+        const defenceCategory = category === "offence" ? "defence" : "tactical";
+        const defenceSkill = [...target.skills.filter((skill) => skill.category === defenceCategory)].sort((a, b) => b.rating - a.rating)[0];
+        const defenderBonus = defenceSkill?.rating || 0;
+        const attackerAdvantage = byId<HTMLInputElement>("roll-advantage").checked;
+        const defenderAdvantage = category === "offence" && perkRanks(target, "Evasive") > 0;
+        const rollSide = (bonus: number, advantage: boolean, energy = 0) => {
+          const dice = Array.from({ length: advantage ? 3 : 2 }, () => Math.ceil(Math.random() * 6));
+          const kept = [...dice].sort((a, b) => b - a).slice(0, 2);
+          return { dice, kept, total: kept[0] + kept[1] + bonus + energy };
+        };
+        const attacker = rollSide(attackerBonus, attackerAdvantage, pendingEnergyBoost);
+        const defender = rollSide(defenderBonus, defenderAdvantage);
+        const success = attacker.total >= defender.total;
+        const margin = Math.abs(attacker.total - defender.total);
+        byId("dice-result").innerHTML = `<div class="contest-result ${success ? "success" : "failure"}"><strong>${success ? "SUCCESS" : "DEFENDED"}</strong><span>Margin ${margin}</span></div>
+          <div class="contest-side"><b>${unit.name}</b><strong>${attacker.total}</strong><span>Rolled [${attacker.dice.join(", ")}], kept ${attacker.kept.join(" + ")} + ${attackerBonus}${pendingEnergyBoost ? ` + ${pendingEnergyBoost} energy` : ""}${attackerAdvantage ? " · advantage" : ""}</span></div>
+          <div class="contest-side"><b>${target.name}</b><strong>${defender.total}</strong><span>Rolled [${defender.dice.join(", ")}], kept ${defender.kept.join(" + ")} + ${defenderBonus}${defenderAdvantage ? " · advantage" : ""}${defenceSkill ? ` · ${defenceSkill.name}` : " · no matching skill"}</span></div>`;
+        byId("compact-dice-result").textContent = success ? `${attacker.total}✓` : `${attacker.total}×`;
+        const entry = document.createElement("li");
+        entry.textContent = `${unit.name} ${attacker.total} vs ${target.name} ${defender.total}: ${success ? "success" : "defended"}`;
+        byId("roll-log").prepend(entry);
+        byId("battle-status").textContent = `${unit.name}'s ${skillName} ${success ? `succeeds against ${target.name}` : `is defended by ${target.name}`} by ${margin}.`;
+        logActivity(`${unit.name} uses ${skillName} against ${target.name}: ${attacker.total} vs ${defender.total}, ${success ? "success" : "defended"}.`);
+        pendingEnergyBoost = 0;
+        if (success && pendingEnergyDamage) {
+          byId("battle-status").textContent += ` ${pendingEnergyDamage} magical damage is ready to apply.`;
+          pendingEnergyDamage = 0;
+        }
+      } else {
+        byId<HTMLInputElement>("roll-bonus").value = `${attackerBonus}`;
+        byId("battle-status").textContent = `${unit.name} uses ${skillName}. Roll when ready.`;
+      }
       renderSelected();
     }));
     byId("selected-unit").querySelectorAll<HTMLButtonElement>("[data-perk]").forEach((button) => button.addEventListener("click", () => {
