@@ -328,9 +328,13 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .target-meta { margin: .4rem 0 .75rem; padding: .45rem .55rem; border-left: 3px solid var(--ember); background: rgba(255,125,70,.07); color: var(--muted); font-size: .7rem; }
 .target-meta.in-range { border-color: var(--rift); background: rgba(144,226,189,.07); }
 .target-meta.out-of-range { border-color: #e59086; color: #e5aaa4; }
+.activation-guide { margin: -.25rem 0 .75rem; color: var(--ink); font-size: .7rem; line-height: 1.5; }
 .usable-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; }
 .usable-list h3, .perk-use-list h3, .energy-use-list h3 { margin: 0 0 .35rem; color: var(--rift); font-size: .65rem; text-transform: uppercase; }
-.usable-list button, .perk-use-list button, .energy-use-list button { display: block; width: 100%; margin-bottom: .25rem; padding: .35rem; border: 1px solid var(--line); background: var(--night); color: var(--muted); cursor: pointer; font: inherit; font-size: .62rem; text-align: left; }
+.usable-list button, .perk-use-list button, .energy-use-list button { display: block; width: 100%; margin-bottom: .25rem; padding: .45rem; border: 1px solid var(--line); background: var(--night); color: var(--muted); cursor: pointer; font: inherit; font-size: .62rem; text-align: left; }
+.usable-list button strong { display: block; color: var(--ink); font-size: .65rem; }
+.usable-list button span { display: block; margin-top: .15rem; }
+.usable-list button:not(:disabled):hover { border-color: var(--rift); background: rgba(144,226,189,.08); }
 .usable-list button:disabled { opacity: .38; cursor: not-allowed; }
 .usable-list span, .perk-use-list span, .energy-use-list span { color: var(--dim); font-size: .65rem; }
 .energy-use-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: .25rem; margin-block: .8rem; }

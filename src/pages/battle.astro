@@ -390,13 +390,16 @@ import SiteFooter from "../components/SiteFooter.astro";
       <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"} · ${movesRemaining} remaining</p>
       <p class="unit-meta">${unit.usedSkills.length} skill activation${unit.usedSkills.length === 1 ? "" : "s"} used · ${unit.bonusActivations} bonus reactivation${unit.bonusActivations === 1 ? "" : "s"} remaining</p>
       ${target ? `<p class="target-meta${targetInRange ? " in-range" : " out-of-range"}">Target: <strong>${target.name}</strong> · ${targetDistance} zone${targetDistance === 1 ? "" : "s"} away · ${targetInRange ? "in range" : `out of range (max ${skillRange})`}</p>` : `<p class="target-meta">Click another unit on the map to target it. Skill range: ${skillRange} zone${skillRange === 1 ? "" : "s"}.</p>`}
+      <p class="activation-guide">${target ? targetInRange ? "Choose an offence or tactical skill below. Clicking it immediately rolls the contest and applies the result." : "Move closer or choose another target before using an offence or tactical skill." : "1. Click a unit on the map to target it. 2. Click one of the skill buttons below to resolve it immediately."}</p>
       ${advantageUnitId === unit.id ? `<p class="advantage-ready">Advantage ready for the next offence or tactical roll.</p>` : ""}
       <div class="inline-resolution" id="inline-resolution" aria-live="polite">${latestResolution || `<span>No skill resolved yet.</span>`}</div>
       <div class="energy-use-list"><h3>Spend energy</h3>${energyAbilities.join("") || "<span>This unit has no energy pool.</span>"}</div>
       <div class="usable-list">${(["offence", "defence", "tactical"] as const).map((category) => `<div><h3>${category}</h3>${unit.skills.filter((skill) => skill.category === category).map((skill, index) => {
         const key = `${skill.category}:${skill.name}:${index}`;
         const spent = category !== "defence" && unit.usedSkills.includes(key);
-        return `<button type="button" data-skill="${skill.rating}" data-skill-key="${key}" data-skill-category="${category}"${spent && unit.bonusActivations < 1 ? " disabled" : ""}>${skill.name} ${skill.rating}${spent ? " · used" : ""}</button>`;
+        const unavailable = spent && unit.bonusActivations < 1;
+        const verb = category === "offence" ? "Attack" : category === "tactical" ? "Use tactic" : "Roll defence";
+        return `<button type="button" data-skill="${skill.rating}" data-skill-key="${key}" data-skill-category="${category}"${unavailable ? " disabled" : ""}><strong>${verb}: ${skill.name}</strong><span>+${skill.rating}${spent ? " · already used" : category === "defence" ? " · reactive" : " · resolves now"}</span></button>`;
       }).join("") || "<span>None</span>"}</div>`).join("")}</div>
       <div class="perk-use-list"><h3>Perks</h3>${unit.perks.map((perk) => `<button type="button" data-perk="${perk.name}">${perk.name}${perk.ranks > 1 ? ` ${perk.ranks}` : ""}</button>`).join("") || "<span>None</span>"}</div>
       <button class="button secondary full-button" id="reset-movement" type="button">Reset movement</button>
