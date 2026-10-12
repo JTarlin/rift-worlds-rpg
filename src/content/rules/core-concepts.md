@@ -19,7 +19,7 @@ When your character attempts something non-trivial with consequences for failure
 
 ## Character attributes
 
-Characters have **skill points** and **perks**. Every skill is categorized as **offence**, **defence**, or **tactical**. Skill points add bonuses to dice rolls made to resolve situations, while perks provide benefits such as health, damage, energy, actions, and movement.
+Characters have **skill points** and **perks**. Every skill is categorized as **offence**, **defence**, or **tactical**. Skill points add bonuses to dice rolls made to resolve situations, while perks provide benefits such as health, damage, energy, additional activations, and movement.
 
 ### Health
 
@@ -33,11 +33,11 @@ Hazards and enemies can damage an unconscious character again. If they do, the c
 
 Characters start with **0 energy** and gain it through perks or prolonged rest. Any character can spend energy before rolling to gain **+1 to a dice roll**, or spend it to deal **+1 magical damage** on an attack.
 
-Some perks allow energy to restore health, block damage, or gain actions.
+Some perks allow energy to restore health, block damage, or reactivate skills.
 
-### Actions
+### Skill activations
 
-Characters have **1 action** by default. Actions determine how often a character can act in combat. A character with three actions can act three times on their turn.
+On their turn, a character can activate each offence and tactical skill once. Defence skills are reactive and remain available. Additional activation effects allow a character to use an already-activated offence or tactical skill again.
 
 ### Movement
 

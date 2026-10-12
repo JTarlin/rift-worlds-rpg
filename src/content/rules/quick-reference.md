@@ -19,7 +19,7 @@ Both sides roll **2d6 + relevant skills and bonuses**. Highest result wins. Ties
 
 - Health: 1 per odd level reached + 3 per Health perk
 - Energy: 0
-- Actions per turn: 1
+- Offence/tactical activations: each skill once per turn
 - Movements per turn: 1
 - Movement distance: 1 adjacent zone
 - Skill points: equal to level
@@ -50,7 +50,7 @@ Move to one adjacent zone per movement. Speed increases movement distance. Dash 
 
 - Health perk: +3 health
 - Energy: +3 max energy
-- Action: +1 action
+- Action: reactivate one used offence or tactical skill
 - Speed: +1 movement distance
 - Dash: +1 movement
 - Physical / Magic Damage: +1 relevant damage

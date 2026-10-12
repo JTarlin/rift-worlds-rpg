@@ -50,7 +50,7 @@ Characters gain one perk at every even-numbered level. Perks can be selected mul
 | --- | --- |
 | **Speed** | Gain +1 movement speed per rank. |
 | **Dash** | Gain +1 movement per turn per rank. |
-| **Action** | Gain +1 action per turn per rank. |
+| **Action** | Reactivate one used offence or tactical skill per turn per rank. |
 | **Clutch** | Gain +1 automatic success on a check per day per rank. Clutch cannot be used for contests. |
 
 ## Equipment

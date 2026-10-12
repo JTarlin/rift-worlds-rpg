@@ -1,15 +1,17 @@
 ---
 title: Combat
-description: Use actions, zones, skill categories, and opposed rolls to resolve combat.
+description: Use skill activations, zones, and opposed rolls to resolve combat.
 order: 4
 icon: "⚔"
 eyebrow: Chapter Four
 updated: 2026-10-10
 ---
 
-## Turns and actions
+## Turns and skill activations
 
-A character can act once per turn by default. Each rank of the Action perk grants one additional action. Actions are used to attack and perform other significant combat tasks.
+On their turn, a character may activate each of their **offence** and **tactical** skills once. They may activate as many different skills as they possess. Defence skills are reactive and are not expended when used.
+
+Each rank of the **Action** perk allows the character to reactivate one offence or tactical skill that they already used that turn.
 
 A character can also move once per turn. Movement allows them to enter an adjacent zone; movement speed and the Dash perk can extend this.
 
