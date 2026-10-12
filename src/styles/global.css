@@ -262,6 +262,17 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .battle-sidebar { display: grid; gap: 1rem; }
 .battle-card { padding: 1rem; border: 1px solid var(--line); background: var(--night-soft); }
 [data-phase][hidden] { display: none !important; }
+.selected-card { order: -2; }
+.compact-battle-card { padding: 0; }
+.compact-battle-card summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; color: var(--ink); cursor: pointer; font-family: var(--display); font-size: .82rem; list-style: none; }
+.compact-battle-card summary::-webkit-details-marker { display: none; }
+.compact-battle-card summary::before { color: var(--rift); content: "+"; font-family: var(--body); font-size: 1rem; }
+.compact-battle-card[open] summary::before { content: "−"; }
+.compact-battle-card summary > span:first-of-type { flex: 1; }
+.compact-battle-card summary .eyebrow { display: block; margin-bottom: .1rem; font-family: var(--body); }
+.compact-battle-card summary strong, #compact-dice-result { color: var(--ember); }
+.compact-card-body { padding: 0 1rem 1rem; }
+.compact-title { margin-bottom: .5rem !important; }
 .battle-card .panel-title { margin-bottom: 1rem; }
 .battle-card .panel-title strong { color: var(--ember); font-family: var(--display); }
 .team-tabs { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: .8rem; }

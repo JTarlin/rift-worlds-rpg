@@ -83,17 +83,26 @@ import SiteFooter from "../components/SiteFooter.astro";
           </div>
         </section>
 
-        <section class="battle-card" data-phase="play">
-          <div class="panel-title"><div><p class="eyebrow">Round control</p><h2>Turn tracker</h2></div><strong id="round-label">Round 1</strong></div>
+        <section class="battle-card selected-card" data-phase="play">
+          <div class="panel-title"><div><p class="eyebrow">Active piece</p><h2 id="selected-name">No unit selected</h2></div></div>
+          <div id="selected-unit"><p class="storage-note">Choose a deployed unit to view its skills, perks, health, and actions.</p></div>
+        </section>
+
+        <details class="battle-card compact-battle-card" data-phase="play">
+          <summary><span><span class="eyebrow">Round control</span> Turn tracker</span><strong id="round-label">Round 1</strong></summary>
+          <div class="compact-card-body">
+          <div class="panel-title compact-title"><div><h2>Initiative</h2></div></div>
           <div class="initiative-list" id="initiative-list"></div>
           <div class="turn-buttons">
             <button class="button secondary" id="start-match" type="button">Roll initiative</button>
             <button class="button primary" id="next-turn" type="button">Next turn</button>
           </div>
-        </section>
+          </div>
+        </details>
 
-        <section class="battle-card dice-card" data-phase="play">
-          <div class="panel-title"><div><p class="eyebrow">Resolution</p><h2>Dice roller</h2></div></div>
+        <details class="battle-card dice-card compact-battle-card" data-phase="play">
+          <summary><span><span class="eyebrow">Resolution</span> Dice roller</span><span id="compact-dice-result">—</span></summary>
+          <div class="compact-card-body">
           <div class="dice-controls">
             <label>Skill bonus<input id="roll-bonus" type="number" value="0" /></label>
             <label class="check-label"><input id="roll-advantage" type="checkbox" /> Advantage</label>
@@ -101,12 +110,8 @@ import SiteFooter from "../components/SiteFooter.astro";
           <button class="button primary full-button" id="roll-dice" type="button">Roll 2d6</button>
           <div class="dice-result" id="dice-result" aria-live="polite">—</div>
           <ol class="roll-log" id="roll-log"></ol>
-        </section>
-
-        <section class="battle-card selected-card" data-phase="play">
-          <div class="panel-title"><div><p class="eyebrow">Active piece</p><h2 id="selected-name">No unit selected</h2></div></div>
-          <div id="selected-unit"><p class="storage-note">Choose a deployed unit to view its skills, perks, health, and actions.</p></div>
-        </section>
+          </div>
+        </details>
         <section class="battle-card match-log-card" data-phase="play">
           <div class="panel-title"><div><p class="eyebrow">Match record</p><h2>Activity</h2></div></div>
           <ol class="match-log" id="match-log"></ol>
@@ -722,6 +727,7 @@ import SiteFooter from "../components/SiteFooter.astro";
     const energyBoost = pendingEnergyBoost;
     const energyDamage = pendingEnergyDamage;
     const total = kept[0] + kept[1] + bonus + energyBoost;
+    byId("compact-dice-result").textContent = `${total}`;
     byId("dice-result").innerHTML = `<strong>${total}</strong><span>${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${energyBoost ? ` + ${energyBoost} energy` : ""}${advantage ? " (advantage)" : ""}${energyDamage ? ` · +${energyDamage} magical damage on success` : ""}</span>`;
     const entry = document.createElement("li");
     entry.textContent = `${total}: ${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${energyBoost ? ` + ${energyBoost} energy` : ""}${energyDamage ? `; +${energyDamage} magical damage on success` : ""}`;
