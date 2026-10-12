@@ -147,6 +147,7 @@ import SiteFooter from "../components/SiteFooter.astro";
   let contextErasing = false;
   let paintDragged = false;
   let movesRemaining = 0;
+  let lastMovedUnitId = "";
   let pendingEnergyBoost = 0;
   let pendingEnergyDamage = 0;
 
@@ -338,9 +339,11 @@ import SiteFooter from "../components/SiteFooter.astro";
       const activeUnit = units.find((candidate) => candidate.id === selectedUnitId);
       const distance = activeUnit ? zoneDistance(activeUnit.cell, cell.index) : Number.POSITIVE_INFINITY;
       const reachable = mode === "play" && selectedUnitId && !unit && !cell.impassable && distance <= movesRemaining;
+      const moveCost = reachable ? distance : 0;
       const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
-      return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
+      return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${unit?.id === lastMovedUnitId ? " just-moved" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
         <span class="zone-label">${cell.zone}</span>
+        ${reachable ? `<span class="move-cost">${moveCost === 0 ? "FREE" : `${moveCost} MOVE`}</span>` : ""}
         ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
       </button>`;
@@ -556,10 +559,17 @@ import SiteFooter from "../components/SiteFooter.astro";
       if (unit && !cell.impassable && distance <= movesRemaining) {
         const origin = cells[unit.cell].zone || "unmarked zone";
         unit.cell = cell.index;
+        lastMovedUnitId = unit.id;
         movesRemaining -= distance;
         const destination = cell.zone || "unmarked zone";
         logActivity(distance === 0 ? `${unit.name} repositions within ${destination}.` : `${unit.name} moves ${distance} zone${distance === 1 ? "" : "s"} from ${origin} to ${destination}.`);
         applyHazard(unit, cell);
+        window.setTimeout(() => {
+          if (lastMovedUnitId === unit.id) {
+            lastMovedUnitId = "";
+            renderMap();
+          }
+        }, 650);
       } else if (unit) {
         byId("battle-status").textContent = `${unit.name} cannot reach that zone with ${movesRemaining} movement remaining.`;
       }
