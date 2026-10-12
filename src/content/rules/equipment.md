@@ -41,7 +41,7 @@ Characters gain one perk at every even-numbered level. Perks can be selected mul
 | **Retaliation** | +1 time per turn per rank, attack back when attacked. |
 | **Magic Damage** | Deal +1 damage per rank with magical effects. |
 | **Multitarget** | Target +1 character per rank in a zone with an attack. |
-| **Range** | Target characters +1 zone away per rank with attacks. |
+| **Range** | Target characters +1 zone away per rank with offence and tactical skills. Without Range, those skills target within the same zone. |
 | **Momentum** | Deal +1 damage per rank and distance moved on your first melee attack after moving. Apply it again if you move more than once. |
 
 ## Mobility and utility perks

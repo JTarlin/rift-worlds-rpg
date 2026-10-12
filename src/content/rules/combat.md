@@ -57,4 +57,4 @@ Characters with an energy maximum recuperate 1 energy at the end of their turn u
 
 ## Zones and targets
 
-Characters occupy distinct zones. Most movement reaches an adjacent zone. The Range perk allows attacks to target additional zones away, while Multitarget allows an attack to affect additional characters in one zone.
+Characters occupy distinct zones. Most movement reaches an adjacent zone. Offence and tactical skills can target characters in the same zone by default. Each rank of the Range perk increases their targeting distance by one zone. Multitarget allows an attack to affect additional characters in one zone.

@@ -44,7 +44,7 @@ At 0 health, fall unconscious. Healing can revive you in combat; allies can revi
 
 ## Zones
 
-Move to one adjacent zone per movement. Speed increases movement distance. Dash adds movements. Range extends attack distance. Multitarget adds targets within a zone.
+Move to one adjacent zone per movement. Speed increases movement distance. Dash adds movements. Offence and tactical skills target the same zone by default; each Range rank adds one zone. Multitarget adds targets within a zone.
 
 ## Common stacking perks
 

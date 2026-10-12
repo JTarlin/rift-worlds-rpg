@@ -380,6 +380,9 @@ import SiteFooter from "../components/SiteFooter.astro";
     }
     const maxHealth = healthFor(unit);
     const maxEnergy = energyFor(unit);
+    const skillRange = perkRanks(unit, "Range");
+    const targetDistance = target ? zoneDistance(unit.cell, target.cell) : null;
+    const targetInRange = targetDistance !== null && targetDistance <= skillRange;
     const energyAbilities = [
       maxEnergy ? `<button type="button" data-energy-use="roll">Boost next roll +1</button>` : "",
       maxEnergy ? `<button type="button" data-energy-use="damage">Empower next attack</button>` : "",
@@ -392,7 +395,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       <div class="unit-vitals"><label>Energy <input id="unit-energy" type="number" min="0" max="${maxEnergy}" value="${unit.currentEnergy}"></label><span>/ ${maxEnergy}</span></div>
       <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"} · ${movesRemaining} remaining</p>
       <p class="unit-meta">${unit.usedSkills.length} skill activation${unit.usedSkills.length === 1 ? "" : "s"} used · ${unit.bonusActivations} bonus reactivation${unit.bonusActivations === 1 ? "" : "s"} remaining</p>
-      ${target ? `<p class="target-meta">Target: <strong>${target.name}</strong> · Team ${target.team} · ${target.currentHealth} HP</p>` : `<p class="target-meta">Click another unit on the map to target it.</p>`}
+      ${target ? `<p class="target-meta${targetInRange ? " in-range" : " out-of-range"}">Target: <strong>${target.name}</strong> · ${targetDistance} zone${targetDistance === 1 ? "" : "s"} away · ${targetInRange ? "in range" : `out of range (max ${skillRange})`}</p>` : `<p class="target-meta">Click another unit on the map to target it. Skill range: ${skillRange} zone${skillRange === 1 ? "" : "s"}.</p>`}
       <div class="energy-use-list"><h3>Spend energy</h3>${energyAbilities.join("") || "<span>This unit has no energy pool.</span>"}</div>
       <div class="usable-list">${(["offence", "defence", "tactical"] as const).map((category) => `<div><h3>${category}</h3>${unit.skills.filter((skill) => skill.category === category).map((skill, index) => {
         const key = `${skill.category}:${skill.name}:${index}`;
@@ -443,6 +446,10 @@ import SiteFooter from "../components/SiteFooter.astro";
       }
       const category = button.dataset.skillCategory;
       const key = button.dataset.skillKey || "";
+      if ((category === "offence" || category === "tactical") && target && !targetInRange) {
+        byId("battle-status").textContent = `${target.name} is ${targetDistance} zones away; ${unit.name}'s Range permits ${skillRange}.`;
+        return;
+      }
       const alreadyUsed = unit.usedSkills.includes(key);
       if (category !== "defence" && alreadyUsed) {
         if (unit.bonusActivations < 1) {
