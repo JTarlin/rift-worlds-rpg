@@ -343,7 +343,7 @@ import SiteFooter from "../components/SiteFooter.astro";
       const hazard = cell.hazard || cell.hazardDamage ? `${cell.hazardDamage ? `${cell.hazardDamage} damage${cell.hazard ? "; " : ""}` : ""}${cell.hazard}` : "";
       return `<button type="button" class="hex${cell.terrain ? ` terrain-${cell.terrain}` : ""}${cell.zone ? " zoned" : ""}${cell.impassable ? " impassable" : ""}${hazard ? " hazardous" : ""}${unit ? ` occupied team-${unit.team.toLowerCase()}` : ""}${unit?.id === selectedUnitId ? " selected" : ""}${unit?.id === lastMovedUnitId ? " just-moved" : ""}${reachable ? " reachable" : ""}" style="${style}" data-cell="${cell.index}" title="${cell.terrain || "Unpainted terrain"}${cell.impassable ? " — Impassable" : ""}${cell.zone ? ` — Zone: ${cell.zone}` : ""}${hazard ? ` — Hazard: ${hazard}` : ""}">
         <span class="zone-label">${cell.zone}</span>
-        ${reachable ? `<span class="move-cost">${moveCost === 0 ? "FREE" : `${moveCost} MOVE`}</span>` : ""}
+        ${reachable ? `<span class="move-cost">${moveCost}</span>` : ""}
         ${hazard ? `<span class="hazard-marker" aria-label="Hazard">!</span>` : ""}
         ${unit ? `<span class="unit-token">${unit.name.slice(0, 2).toUpperCase()}</span>` : ""}
       </button>`;

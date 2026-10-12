@@ -258,7 +258,8 @@ h1, h2, h3 { margin-top: 0; font-family: var(--display); font-weight: 600; line-
 .hex.reachable { filter: brightness(1.18); }
 .hex.reachable::before { filter: brightness(1.3) saturate(1.15); }
 .hex.reachable:hover { filter: brightness(1.5); }
-.move-cost { position: absolute; top: 8px; left: 50%; z-index: 5; padding: .15rem .3rem; border: 1px solid #000; border-radius: 3px; background: rgba(7,17,13,.9); color: var(--rift); font-size: .43rem; font-weight: 900; letter-spacing: .03em; transform: translateX(-50%); }
+.move-cost { position: absolute; top: 8px; left: 50%; z-index: 5; display: none; width: 18px; height: 18px; place-items: center; border: 1px solid #000; border-radius: 50%; background: rgba(7,17,13,.94); color: var(--rift); font-size: .55rem; font-weight: 900; transform: translateX(-50%); }
+.hex.reachable:hover .move-cost, .hex.reachable:focus-visible .move-cost { display: grid; }
 .hex.just-moved .unit-token { animation: unit-arrival .6s ease-out; }
 .zone-label { position: absolute; inset: auto 8px 15px; overflow: hidden; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
 .hazard-marker { position: absolute; top: 15px; right: 16px; display: grid; width: 16px; height: 16px; place-items: center; border: 1px solid #000; border-radius: 50%; background: #ffb84d; color: #17100a; font-size: .65rem; font-weight: 900; }
