@@ -100,18 +100,6 @@ import SiteFooter from "../components/SiteFooter.astro";
           </div>
         </details>
 
-        <details class="battle-card dice-card compact-battle-card" data-phase="play">
-          <summary><span><span class="eyebrow">Resolution</span> Dice roller</span><span id="compact-dice-result">—</span></summary>
-          <div class="compact-card-body">
-          <div class="dice-controls">
-            <label>Skill bonus<input id="roll-bonus" type="number" value="0" /></label>
-            <label class="check-label"><input id="roll-advantage" type="checkbox" /> Advantage</label>
-          </div>
-          <button class="button primary full-button" id="roll-dice" type="button">Roll 2d6</button>
-          <div class="dice-result" id="dice-result" aria-live="polite">—</div>
-          <ol class="roll-log" id="roll-log"></ol>
-          </div>
-        </details>
         <section class="battle-card match-log-card" data-phase="play">
           <div class="panel-title"><div><p class="eyebrow">Match record</p><h2>Activity</h2></div></div>
           <ol class="match-log" id="match-log"></ol>
@@ -151,6 +139,8 @@ import SiteFooter from "../components/SiteFooter.astro";
   let lastMovedUnitId = "";
   let pendingEnergyBoost = 0;
   let pendingEnergyDamage = 0;
+  let advantageUnitId = "";
+  let latestResolution = "";
 
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const healthFor = (unit: CharacterTemplate) => Math.ceil(unit.level / 2) + unit.healthPerks * 3;
@@ -400,6 +390,8 @@ import SiteFooter from "../components/SiteFooter.astro";
       <p class="unit-meta">Team ${unit.team} · Level ${unit.level} · Movement ${movementFor(unit)} zone${movementFor(unit) === 1 ? "" : "s"} · ${movesRemaining} remaining</p>
       <p class="unit-meta">${unit.usedSkills.length} skill activation${unit.usedSkills.length === 1 ? "" : "s"} used · ${unit.bonusActivations} bonus reactivation${unit.bonusActivations === 1 ? "" : "s"} remaining</p>
       ${target ? `<p class="target-meta${targetInRange ? " in-range" : " out-of-range"}">Target: <strong>${target.name}</strong> · ${targetDistance} zone${targetDistance === 1 ? "" : "s"} away · ${targetInRange ? "in range" : `out of range (max ${skillRange})`}</p>` : `<p class="target-meta">Click another unit on the map to target it. Skill range: ${skillRange} zone${skillRange === 1 ? "" : "s"}.</p>`}
+      ${advantageUnitId === unit.id ? `<p class="advantage-ready">Advantage ready for the next offence or tactical roll.</p>` : ""}
+      <div class="inline-resolution" id="inline-resolution" aria-live="polite">${latestResolution || `<span>No skill resolved yet.</span>`}</div>
       <div class="energy-use-list"><h3>Spend energy</h3>${energyAbilities.join("") || "<span>This unit has no energy pool.</span>"}</div>
       <div class="usable-list">${(["offence", "defence", "tactical"] as const).map((category) => `<div><h3>${category}</h3>${unit.skills.filter((skill) => skill.category === category).map((skill, index) => {
         const key = `${skill.category}:${skill.name}:${index}`;
@@ -470,7 +462,7 @@ import SiteFooter from "../components/SiteFooter.astro";
         const defenceCategory = category === "offence" ? "defence" : "tactical";
         const defenceSkill = [...target.skills.filter((skill) => skill.category === defenceCategory)].sort((a, b) => b.rating - a.rating)[0];
         const defenderBonus = defenceSkill?.rating || 0;
-        const attackerAdvantage = byId<HTMLInputElement>("roll-advantage").checked;
+        const attackerAdvantage = advantageUnitId === unit.id;
         const defenderAdvantage = category === "offence" && perkRanks(target, "Evasive") > 0;
         const rollSide = (bonus: number, advantage: boolean, energy = 0) => {
           const dice = Array.from({ length: advantage ? 3 : 2 }, () => Math.ceil(Math.random() * 6));
@@ -481,34 +473,29 @@ import SiteFooter from "../components/SiteFooter.astro";
         const defender = rollSide(defenderBonus, defenderAdvantage);
         const success = attacker.total >= defender.total;
         const margin = Math.abs(attacker.total - defender.total);
-        byId("dice-result").innerHTML = `<div class="contest-result ${success ? "success" : "failure"}"><strong>${success ? "SUCCESS" : "DEFENDED"}</strong><span>Margin ${margin}</span></div>
+        latestResolution = `<div class="contest-result ${success ? "success" : "failure"}"><strong>${success ? "SUCCESS" : "DEFENDED"}</strong><span>Margin ${margin}</span></div>
           <div class="contest-side"><b>${unit.name}</b><strong>${attacker.total}</strong><span>Rolled [${attacker.dice.join(", ")}], kept ${attacker.kept.join(" + ")} + ${attackerBonus}${pendingEnergyBoost ? ` + ${pendingEnergyBoost} energy` : ""}${attackerAdvantage ? " · advantage" : ""}</span></div>
           <div class="contest-side"><b>${target.name}</b><strong>${defender.total}</strong><span>Rolled [${defender.dice.join(", ")}], kept ${defender.kept.join(" + ")} + ${defenderBonus}${defenderAdvantage ? " · advantage" : ""}${defenceSkill ? ` · ${defenceSkill.name}` : " · no matching skill"}</span></div>`;
-        byId("compact-dice-result").textContent = success ? `${attacker.total}✓` : `${attacker.total}×`;
-        const entry = document.createElement("li");
-        entry.textContent = `${unit.name} ${attacker.total} vs ${target.name} ${defender.total}: ${success ? "success" : "defended"}`;
-        byId("roll-log").prepend(entry);
         byId("battle-status").textContent = `${unit.name}'s ${skillName} ${success ? `succeeds against ${target.name}` : `is defended by ${target.name}`} by ${margin}.`;
         logActivity(`${unit.name} uses ${skillName} against ${target.name}: ${attacker.total} vs ${defender.total}, ${success ? "success" : "defended"}.`);
         pendingEnergyBoost = 0;
+        if (attackerAdvantage) advantageUnitId = "";
+        if (category === "tactical" && success) advantageUnitId = unit.id;
         if (success && pendingEnergyDamage) {
           byId("battle-status").textContent += ` ${pendingEnergyDamage} magical damage is ready to apply.`;
           pendingEnergyDamage = 0;
         }
       } else {
-        const advantage = byId<HTMLInputElement>("roll-advantage").checked;
+        const advantage = advantageUnitId === unit.id;
         const dice = Array.from({ length: advantage ? 3 : 2 }, () => Math.ceil(Math.random() * 6));
         const kept = [...dice].sort((a, b) => b - a).slice(0, 2);
         const total = kept[0] + kept[1] + attackerBonus + pendingEnergyBoost;
-        byId("dice-result").innerHTML = `<div class="contest-result success"><strong>${skillName}</strong><span>Total ${total}</span></div>
+        latestResolution = `<div class="contest-result success"><strong>${skillName}</strong><span>Total ${total}</span></div>
           <div class="contest-side"><b>${unit.name}</b><strong>${total}</strong><span>Rolled [${dice.join(", ")}], kept ${kept.join(" + ")} + ${attackerBonus}${pendingEnergyBoost ? ` + ${pendingEnergyBoost} energy` : ""}${advantage ? " · advantage" : ""}</span></div>`;
-        byId("compact-dice-result").textContent = `${total}`;
-        const entry = document.createElement("li");
-        entry.textContent = `${unit.name} uses ${skillName}: ${total}`;
-        byId("roll-log").prepend(entry);
         byId("battle-status").textContent = `${unit.name} uses ${skillName} and rolls ${total}.`;
         logActivity(`${unit.name} uses ${skillName}: ${total}.`);
         pendingEnergyBoost = 0;
+        if (advantage) advantageUnitId = "";
       }
       renderSelected();
     }));
@@ -811,28 +798,12 @@ import SiteFooter from "../components/SiteFooter.astro";
     }
     selectedUnitId = initiative[turnIndex];
     targetUnitId = "";
+    advantageUnitId = "";
+    latestResolution = "";
     const active = units.find((unit) => unit.id === selectedUnitId);
     movesRemaining = active ? movementFor(active) : 0;
     if (active) logActivity(`${active.name}'s turn begins.`);
     renderAll();
-  });
-
-  byId("roll-dice").addEventListener("click", () => {
-    const dice = [1, 2, 3].map(() => Math.ceil(Math.random() * 6));
-    const advantage = byId<HTMLInputElement>("roll-advantage").checked;
-    const kept = advantage ? dice.sort((a, b) => b - a).slice(0, 2) : dice.slice(0, 2);
-    const bonus = Number(byId<HTMLInputElement>("roll-bonus").value) || 0;
-    const energyBoost = pendingEnergyBoost;
-    const energyDamage = pendingEnergyDamage;
-    const total = kept[0] + kept[1] + bonus + energyBoost;
-    byId("compact-dice-result").textContent = `${total}`;
-    byId("dice-result").innerHTML = `<strong>${total}</strong><span>${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${energyBoost ? ` + ${energyBoost} energy` : ""}${advantage ? " (advantage)" : ""}${energyDamage ? ` · +${energyDamage} magical damage on success` : ""}</span>`;
-    const entry = document.createElement("li");
-    entry.textContent = `${total}: ${kept.join(" + ")}${bonus ? ` + ${bonus}` : ""}${energyBoost ? ` + ${energyBoost} energy` : ""}${energyDamage ? `; +${energyDamage} magical damage on success` : ""}`;
-    byId("roll-log").prepend(entry);
-    logActivity(`Rolled ${total}${energyBoost ? ` with +${energyBoost} from energy` : ""}${energyDamage ? `; ${energyDamage} magical damage prepared` : ""}.`);
-    pendingEnergyBoost = 0;
-    pendingEnergyDamage = 0;
   });
 
   byId("save-battle").addEventListener("click", () => {
